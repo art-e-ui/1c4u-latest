@@ -378,6 +378,7 @@ export default function VirtualOrderServicesPage() {
                   <div className="flex-1 min-w-0">
                     <div className="font-medium truncate">{reseller.firstName} {reseller.lastName}</div>
                     <div className="text-[10px] opacity-70 truncate">{reseller.shopName || "No Shop Name"}</div>
+                    <div className="text-[10px] text-muted-foreground">ID: 1CR{reseller.resellerId}</div>
                     <div className={cn(
                       "text-[10px] font-medium mt-0.5",
                       isOnline ? "text-emerald-600" : "text-muted-foreground"

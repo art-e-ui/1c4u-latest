@@ -47,6 +47,14 @@ interface ResellerSession {
   reseller_avatar: string;
   is_online: boolean;
   last_message_at: string;
+  shop_name?: string;
+  numeric_id?: string;
+  full_name?: string;
+  referralId?: string;
+  referredBy?: string;
+  memberOfAdminId?: string;
+  staffName?: string;
+  adminMember?: string;
 }
 
 interface CartItem {
@@ -358,10 +366,10 @@ export default function SQCVirtualOrdersPage() {
         user_id: selectedProfile.id, // For customer order tracking
         customerName: selectedProfile.name,
         profileName: selectedProfile.name,
-        resellerName: activeReseller.reseller_name,
-        resellerId: activeReseller.id, // Use UID for consistency with ResellerOrders.tsx query
-        reseller_id: activeReseller.id, // Use UID for consistency with Firestore security rules
-        resellerNumericId: activeReseller.resellerId || 0, // Keep numeric ID for display
+        resellerName: activeReseller.full_name || activeReseller.reseller_name,
+        resellerId: activeReseller.reseller_id, // Use actual reseller user ID (UUID)
+        reseller_id: activeReseller.reseller_id, // Use actual reseller user ID (UUID)
+        resellerNumericId: activeReseller.numeric_id || activeReseller.resellerId || "0", // Keep numeric ID for display
         staffUsername: activeReseller.staffName || "System",
         adminName: activeReseller.adminMember || "System",
         total_amount: totalCost, // For customer page
@@ -458,7 +466,9 @@ export default function SQCVirtualOrdersPage() {
         full_name: profile ? `${profile.firstName} ${profile.lastName}` : session.reseller_name,
         referralId: profile?.referralId || "",
         referredBy: profile?.referredBy || "",
-        memberOfAdminId: profile?.memberOfAdminId || ""
+        memberOfAdminId: profile?.memberOfAdminId || "",
+        staffName: profile?.staffName || "",
+        adminMember: profile?.adminMember || ""
       };
     });
 
@@ -705,8 +715,11 @@ export default function SQCVirtualOrdersPage() {
                         )}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-foreground truncate">{s.reseller_name}</p>
-                        <p className="text-[10px] text-muted-foreground">ID: {s.reseller_id}</p>
+                        <p className="text-sm font-medium text-foreground truncate">{s.full_name || s.reseller_name}</p>
+                        <p className="text-[10px] text-muted-foreground">
+                          {s.numeric_id ? `ID: 1CR${s.numeric_id}` : `ID: ${s.reseller_id}`}
+                        </p>
+                        {s.shop_name && <p className="text-[10px] text-muted-foreground italic truncate">Shop: {s.shop_name}</p>}
                       </div>
                     </button>
                   ))
@@ -729,10 +742,10 @@ export default function SQCVirtualOrdersPage() {
                 {/* Cart header */}
                 <div className="px-4 py-3 border-b border-border flex items-center gap-3 bg-card">
                   <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-sm font-bold text-primary">
-                    {(activeReseller.reseller_name || "U").charAt(0).toUpperCase()}
+                    {(activeReseller.full_name || activeReseller.reseller_name || "U").charAt(0).toUpperCase()}
                   </div>
                   <div className="flex-1">
-                    <p className="text-sm font-semibold text-foreground">{activeReseller.reseller_name}'s Shop</p>
+                    <p className="text-sm font-semibold text-foreground">{activeReseller.full_name || activeReseller.reseller_name}'s Shop</p>
                     <p className="text-[10px] text-muted-foreground flex items-center gap-1">
                       <Circle className="h-2 w-2 fill-green-500 text-green-500" /> Ordering as: {selectedProfile.name}
                     </p>

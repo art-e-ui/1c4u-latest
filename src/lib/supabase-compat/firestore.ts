@@ -17,9 +17,24 @@ export const TABLE_COLUMNS: Record<string, string[]> = {
   sla_admins: ["id", "value", "created_at"],
   sla_staff: ["id", "value", "created_at"],
   system_settings: ["id", "value", "created_at", "updated_at"],
-  orders: ["id", "user_id", "reseller_id", "reseller_uid", "total_amount", "status", "shipping_address", "payment_method", "payment_status", "created_at", "updated_at"],
-  deposit_requests: ["id", "reseller_id", "reseller_doc_id", "amount", "status", "payment_method", "receipt_url", "created_at", "updated_at"],
-  withdrawal_requests: ["id", "reseller_id", "reseller_doc_id", "amount", "status", "bank_name", "account_number", "account_name", "created_at", "updated_at"],
+  orders: [
+    "id", "user_id", "reseller_id", "reseller_uid", "total_amount", "status", 
+    "shipping_address", "payment_method", "payment_status", "created_at", "updated_at",
+    "order_id", "customer_name", "customer_email", "reseller_name", "reseller_numeric_id", 
+    "staff_username", "admin_name", "total_cost", "service_cost", "profit", "items", 
+    "items_count", "products_count", "focused", "picked_up_at", "completed_at", 
+    "referral_id", "referred_by", "member_of_admin_id", "subtotal", "tax", "shipping", "order_number"
+  ],
+  deposit_requests: [
+    "id", "reseller_id", "reseller_doc_id", "amount", "status", "payment_method", 
+    "receipt_url", "created_at", "updated_at", "reseller_name", "usdt_address", 
+    "referral_id", "member_of_admin_id", "proof_image"
+  ],
+  withdrawal_requests: [
+    "id", "reseller_id", "reseller_doc_id", "amount", "status", "bank_name", 
+    "account_number", "account_name", "created_at", "updated_at", "reseller_name", 
+    "payment_method", "usdt_address", "bank_info", "referral_id", "member_of_admin_id"
+  ],
   support_sessions: ["id", "user_email", "user_name", "status", "created_at"],
   support_messages: ["id", "session_id", "sender_name", "sender_role", "message", "created_at"],
   reseller_chat_sessions: ["id", "reseller_id", "status", "last_message_at", "created_at"],
@@ -33,6 +48,101 @@ export const TABLE_COLUMNS: Record<string, string[]> = {
   virtual_profiles: ["id", "config", "created_at"],
   seasonal_themes: ["id", "name", "status", "config", "created_at"]
 };
+
+export const KEY_MAPS: Record<string, Record<string, string>> = {
+  orders: {
+    orderId: "order_id",
+    resellerName: "reseller_name",
+    resellerNumericId: "reseller_numeric_id",
+    staffUsername: "staff_username",
+    adminName: "admin_name",
+    adminUsername: "admin_name",
+    totalCost: "total_cost",
+    total_cost: "total_cost",
+    serviceCost: "service_cost",
+    service_cost: "service_cost",
+    profit: "profit",
+    profits: "profit",
+    profileName: "profile_name",
+    customerName: "customer_name",
+    customerEmail: "customer_email",
+    createdAt: "created_at",
+    created_at: "created_at",
+    pickedUpAt: "picked_up_at",
+    picked_up_at: "picked_up_at",
+    completedAt: "completed_at",
+    completed_at: "completed_at",
+    referralId: "referral_id",
+    referredBy: "referred_by",
+    memberOfAdminId: "member_of_admin_id",
+    itemsCount: "items_count",
+    items_count: "items_count",
+    productsCount: "products_count",
+    products_count: "products_count",
+    orderNumber: "order_number",
+    order_number: "order_number",
+    shippingAddress: "shipping_address"
+  },
+  deposit_requests: {
+    resellerId: "reseller_id",
+    resellerDocId: "reseller_doc_id",
+    resellerName: "reseller_name",
+    status: "status",
+    amount: "amount",
+    method: "payment_method",
+    proofImage: "receipt_url",
+    createdAt: "created_at",
+    usdtAddress: "usdt_address",
+    referralId: "referral_id",
+    memberOfAdminId: "member_of_admin_id"
+  },
+  withdrawal_requests: {
+    resellerId: "reseller_id",
+    resellerDocId: "reseller_doc_id",
+    resellerName: "reseller_name",
+    status: "status",
+    amount: "amount",
+    method: "payment_method",
+    createdAt: "created_at",
+    usdtAddress: "usdt_address",
+    referralId: "referral_id",
+    memberOfAdminId: "member_of_admin_id",
+    bankInfo: "bank_info"
+  }
+};
+
+export function mapKeysToSnakeCase(data: any, tableName: string): any {
+  if (!data || typeof data !== "object") return data;
+  const map = KEY_MAPS[tableName];
+  if (!map) return data;
+
+  const result: any = { ...data };
+  for (const camelKey of Object.keys(map)) {
+    const snakeKey = map[camelKey];
+    if (data[camelKey] !== undefined) {
+      result[snakeKey] = data[camelKey];
+      if (camelKey !== snakeKey) {
+        delete result[camelKey];
+      }
+    }
+  }
+  return result;
+}
+
+export function mapKeysToCamelCase(row: any, tableName: string): any {
+  if (!row || typeof row !== "object") return row;
+  const map = KEY_MAPS[tableName];
+  if (!map) return row;
+
+  const result: any = { ...row };
+  for (const camelKey of Object.keys(map)) {
+    const snakeKey = map[camelKey];
+    if (row[snakeKey] !== undefined) {
+      result[camelKey] = row[snakeKey];
+    }
+  }
+  return result;
+}
 
 export function filterColumnsForTable(tableName: string, data: any): any {
   const allowed = TABLE_COLUMNS[tableName];
@@ -140,6 +250,11 @@ export function translateQueryField(field: string, tableName: string): string {
   // Removed translations for reseller_id, account_id, and staff_id to allow querying actual columns/fields
   if (tableName === "system_settings") {
     if (field === "key") return "id";
+  }
+
+  const map = KEY_MAPS[tableName];
+  if (map && map[field]) {
+    return map[field];
   }
   
   const PACKED_TABLES: Record<string, string> = {
@@ -293,6 +408,8 @@ export function wrapDoc(row: any, path: string) {
   const idValue = getRowId(row, path) || String(row.id || "");
   let docData = unpackJsonColumns(row, path);
   docData = unpackMetadata(docData, path);
+  
+  docData = mapKeysToCamelCase(docData, path);
   
   docData = {
     ...docData,
@@ -481,7 +598,8 @@ export async function addDoc(collectionObj: any, data: any) {
     dataWithId.id = autoId;
   }
 
-  const packedData = packJsonColumns(JSON.parse(JSON.stringify(dataWithId)), path);
+  const mappedData = mapKeysToSnakeCase(dataWithId, path);
+  const packedData = packJsonColumns(JSON.parse(JSON.stringify(mappedData)), path);
   const cleanData = filterColumnsForTable(path, packMetadata(packedData, path));
   cleanData.id = dataWithId.id;
 
@@ -529,7 +647,8 @@ export async function updateDoc(docObj: any, data: any) {
     }
   }
 
-  const packedData = packJsonColumns(JSON.parse(JSON.stringify(mergedData)), path);
+  const mappedData = mapKeysToSnakeCase(mergedData, path);
+  const packedData = packJsonColumns(JSON.parse(JSON.stringify(mappedData)), path);
   const cleanData = filterColumnsForTable(path, packMetadata(packedData, path));
 
   let q = supabase.from(path).update(cleanData);
@@ -586,7 +705,8 @@ export async function setDoc(docObj: any, data: any, options?: any) {
     }
   }
 
-  const packedData = packJsonColumns(JSON.parse(JSON.stringify(mergedData)), path);
+  const mappedData = mapKeysToSnakeCase(mergedData, path);
+  const packedData = packJsonColumns(JSON.parse(JSON.stringify(mappedData)), path);
   const cleanData = filterColumnsForTable(path, packMetadata(packedData, path));
   cleanData.id = idValue;
 

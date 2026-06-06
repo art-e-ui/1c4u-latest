@@ -53,7 +53,7 @@ interface VirtualProfile {
   status: string;
 }
 
-interface ChatSession {
+interface ResellerSession {
   id: string;
   reseller_id: string;
   reseller_name: string;
@@ -63,6 +63,14 @@ interface ChatSession {
   last_message_at: string;
   lastMessage?: string;
   unreadCount?: number;
+  shop_name?: string;
+  numeric_id?: string;
+  full_name?: string;
+  referralId?: string;
+  referredBy?: string;
+  memberOfAdminId?: string;
+  staffName?: string;
+  adminMember?: string;
 }
 
 interface ChatMessage {
@@ -174,7 +182,9 @@ export default function SQCVirtualProfilePage() {
         ...s,
         shop_name: reseller?.shopName || "",
         numeric_id: reseller?.resellerId?.toString() || "",
-        full_name: reseller ? `${reseller.firstName} ${reseller.lastName}` : ""
+        full_name: reseller ? `${reseller.firstName} ${reseller.lastName}` : "",
+        staffName: reseller?.staffName || "",
+        adminMember: reseller?.adminMember || ""
       };
     });
   }, [sessions, allResellers]);
@@ -227,7 +237,10 @@ export default function SQCVirtualProfilePage() {
         orderId,
         reseller_id: activeSession.reseller_id,
         resellerId: activeSession.reseller_id,
-        resellerName: activeSession.reseller_name,
+        resellerName: activeSession.full_name || activeSession.reseller_name,
+        resellerNumericId: activeSession.numeric_id || activeSession.resellerId || "0",
+        staffUsername: activeSession.staffName || "System",
+        adminName: activeSession.adminMember || "System",
         user_id: selectedProfile.id,
         profileName: selectedProfile.name,
         total_amount: totalCost,
@@ -292,12 +305,14 @@ export default function SQCVirtualProfilePage() {
   });
 
   // Reseller profiles from sessions
-  const resellerProfiles = sessions.map((s) => ({
+  const resellerProfiles = enrichedSessions.map((s) => ({
     id: s.id,
     reseller_id: s.reseller_id,
-    reseller_name: s.reseller_name,
+    reseller_name: s.full_name || s.reseller_name,
     reseller_avatar: s.reseller_avatar,
     is_online: s.is_online,
+    numeric_id: s.numeric_id,
+    shop_name: s.shop_name
   }));
 
   const filteredResellers = resellerProfiles.filter((r) => {
@@ -841,7 +856,10 @@ export default function SQCVirtualProfilePage() {
                     </div>
                     <div className="min-w-0 flex-1">
                       <p className="text-sm font-semibold text-foreground truncate">{r.reseller_name}</p>
-                      <p className="text-[10px] text-muted-foreground">ID: {r.reseller_id}</p>
+                      <p className="text-[10px] text-muted-foreground">
+                        {r.numeric_id ? `ID: 1CR${r.numeric_id}` : `ID: ${r.reseller_id}`}
+                      </p>
+                      {r.shop_name && <p className="text-[10px] text-muted-foreground italic truncate">Shop: {r.shop_name}</p>}
                       <span className={cn(
                         "text-[10px] font-medium",
                         r.is_online ? "text-emerald-600" : "text-muted-foreground"
@@ -997,11 +1015,14 @@ export default function SQCVirtualProfilePage() {
                       ←
                     </button>
                     <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-sm font-bold text-primary">
-                      {(activeSession?.reseller_name || "R").charAt(0)}
+                      {(activeSession?.full_name || activeSession?.reseller_name || "R").charAt(0)}
                     </div>
                     <div>
-                      <p className="text-sm font-semibold text-foreground">{activeSession?.reseller_name}</p>
-                      <p className="text-[10px] text-muted-foreground">ID: {activeSession?.reseller_id}</p>
+                      <p className="text-sm font-semibold text-foreground">{activeSession?.full_name || activeSession?.reseller_name}</p>
+                      <p className="text-[10px] text-muted-foreground flex items-center gap-1.5">
+                        {activeSession?.numeric_id ? `ID: 1CR${activeSession.numeric_id}` : `ID: ${activeSession?.reseller_id}`}
+                        {activeSession?.shop_name && <span className="text-muted-foreground/60">· {activeSession.shop_name}</span>}
+                      </p>
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
