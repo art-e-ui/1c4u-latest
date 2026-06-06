@@ -178,11 +178,23 @@ export default function ARSTrackOrdersPage() {
     });
 
     const enriched = list.map((o) => {
-      const reseller = allowedResellers.find(r => r.id === o.resellerId || r.resellerId?.toString() === o.resellerNumericId);
+      const reseller = rawResellers.find(r => r.id === o.resellerId || r.resellerId?.toString() === o.resellerNumericId);
+      
+      let formattedId = 'N/A';
+      if (reseller) {
+        formattedId = `1CR${reseller.resellerId}`;
+      } else {
+        const fallbackId = o.resellerNumericId || o.resellerId;
+        if (fallbackId) {
+          const str = String(fallbackId);
+          formattedId = str.startsWith('1CR') ? str : (/^\d+$/.test(str) ? `1CR${str}` : str);
+        }
+      }
+
       return {
         ...o,
         resellerName: reseller ? reseller.name : o.resellerName || 'N/A',
-        resellerNumericId: reseller ? `1CR${reseller.resellerId}` : o.resellerNumericId || o.resellerId || 'N/A'
+        resellerNumericId: formattedId
       };
     });
     list = enriched;
@@ -207,7 +219,7 @@ export default function ARSTrackOrdersPage() {
       );
     }
     return list;
-  }, [orders, search, resellerSearch, statusFilter, canSeeAll, allowedResellerIds]);
+  }, [orders, search, resellerSearch, statusFilter, canSeeAll, allowedResellerIds, rawResellers]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const paged = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);

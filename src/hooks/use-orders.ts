@@ -60,7 +60,7 @@ export function useOrders() {
           createdAt: orderData.created_at?.toDate ? orderData.created_at.toDate().toISOString() : orderData.created_at?.seconds ? new Date(orderData.created_at.seconds * 1000).toISOString() : String(orderData.created_at || ''),
           items: itemsCount,
           products: productsCount,
-          resellerId: String(resellerId).startsWith('1CR') ? resellerId : `1CR${resellerId}`,
+          resellerId: String(resellerId).startsWith('1CR') ? resellerId : (/^\d+$/.test(String(resellerId)) ? `1CR${resellerId}` : resellerId),
           staffUsername,
           adminUsername,
           totalCost: Number(orderData.total_cost || orderData.totalCost || 0),

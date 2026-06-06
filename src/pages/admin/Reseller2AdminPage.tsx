@@ -162,13 +162,19 @@ export default function Reseller2AdminPage() {
     const resellerIds = new Set(allResellers.map(r => r.id));
     const orphanedSessions = chatSessions
       .filter(s => !resellerIds.has(s.reseller_id))
-      .map(s => ({ ...s, formattedId: s.reseller_id }));
+      .map(s => {
+        const reseller = rawResellers.find(r => r.id === s.reseller_id);
+        const formattedId = reseller?.resellerId 
+          ? `1CR${reseller.resellerId}` 
+          : (String(s.reseller_id).startsWith('1CR') ? s.reseller_id : (/^\d+$/.test(String(s.reseller_id)) ? `1CR${s.reseller_id}` : s.reseller_id));
+        return { ...s, formattedId };
+      });
 
     if (!canSeeAll) {
       return sessionsFromResellers;
     }
     return [...sessionsFromResellers, ...orphanedSessions];
-  }, [allResellers, chatSessions, canSeeAll]);
+  }, [allResellers, chatSessions, canSeeAll, rawResellers]);
 
   // Separate online/offline resellers from sessions
   const onlineResellers = displaySessions.filter((s) => s.is_online);
@@ -417,8 +423,8 @@ export default function Reseller2AdminPage() {
   const activeSession = displaySessions.find((s) => s.id === activeSessionId);
   const activeReseller = useMemo(() => {
     if (!activeSession) return null;
-    return allResellers.find(r => r.id === activeSession.reseller_id);
-  }, [activeSession, allResellers]);
+    return rawResellers.find(r => r.id === activeSession.reseller_id);
+  }, [activeSession, rawResellers]);
 
   return (
     <div className="flex flex-col h-[calc(100vh-80px)] relative">
@@ -624,7 +630,7 @@ export default function Reseller2AdminPage() {
                   <div>
                     <p className="text-sm font-semibold text-foreground">{activeSession?.reseller_name}</p>
                     <p className="text-[10px] text-muted-foreground flex items-center gap-1">
-                      ID: {activeReseller?.resellerId ? `1CR${activeReseller.resellerId}` : activeSession?.reseller_id}
+                      ID: {activeReseller?.resellerId ? `1CR${activeReseller.resellerId}` : activeSession?.formattedId || activeSession?.reseller_id}
                       <span className={cn(
                         "ml-1 font-medium",
                         activeSession?.is_online ? "text-emerald-600" : ""

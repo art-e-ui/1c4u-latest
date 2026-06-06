@@ -130,7 +130,7 @@ export default function ARSDepositPage() {
       return {
         ...r,
         resellerName: reseller ? reseller.name : r.resellerName || 'N/A',
-        resellerId: reseller ? `1CR${reseller.resellerId}` : r.resellerId || 'N/A',
+        resellerId: reseller ? `1CR${reseller.resellerId}` : (r.resellerId ? (String(r.resellerId).startsWith('1CR') ? r.resellerId : (/^\d+$/.test(String(r.resellerId)) ? `1CR${r.resellerId}` : r.resellerId)) : 'N/A'),
       };
     });
     list = enriched;

@@ -53,7 +53,7 @@ export default function ResellerProfilePage() {
     return filtered.map(r => {
       return {
         id: r.id,
-        reseller_id: r.resellerId || 'N/A',
+        reseller_id: r.resellerId ? (String(r.resellerId).startsWith('1CR') ? r.resellerId : `1CR${r.resellerId}`) : 'N/A',
         referral_code: r.referralId || 'N/A',
         name: r.name,
         email: r.email || 'N/A',

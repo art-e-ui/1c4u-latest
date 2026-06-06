@@ -219,7 +219,7 @@ export default function AdminResellersPage() {
         const telegramMessage = `<b>New Reseller Added (by Admin)</b>\n\n` +
           `👤 Name: ${form.firstName} ${form.lastName}\n` +
           `📧 Email: ${form.email}\n` +
-          `🆔 Reseller ID: ${newResellerId}\n` +
+          `🆔 Reseller ID: 1CR${newResellerId}\n` +
           `🏢 Admin: ${adminName}\n` +
           `👔 Staff: ${staffName}\n` +
           `📅 Date: ${new Date().toLocaleString()}`;
