@@ -12,7 +12,7 @@ export const TABLE_COLUMNS: Record<string, string[]> = {
     "total_deposits", "total_withdrawals", "total_orders", "pending_balance", "usdt_address", "bank_info",
     "system_upgraded_reset", "created_at", "updated_at"
   ],
-  retail_shops: ["id", "shop_name", "level", "product_limit", "domain", "created_at", "updated_at"],
+  retail_shops: ["id", "shop_name", "level", "product_limit", "domain", "reseller_id", "star_rating", "credit_score", "created_at", "updated_at"],
   sla_admins: ["id", "value", "created_at"],
   sla_staff: ["id", "value", "created_at"],
   system_settings: ["id", "value", "created_at", "updated_at"],
@@ -136,15 +136,7 @@ export function translateQueryField(field: string, tableName: string): string {
   if (tableName === "users" || tableName === "reseller_profiles") {
     if (field === "uid") return "id";
   }
-  if (tableName === "retail_shops") {
-    if (field === "reseller_id") return "id";
-  }
-  if (tableName === "sla_admins") {
-    if (field === "account_id") return "id";
-  }
-  if (tableName === "sla_staff") {
-    if (field === "staff_id") return "id";
-  }
+  // Removed translations for reseller_id, account_id, and staff_id to allow querying actual columns/fields
   if (tableName === "system_settings") {
     if (field === "key") return "id";
   }
@@ -310,13 +302,13 @@ export function wrapDoc(row: any, path: string) {
     docData.uid = idValue;
   }
   if (path === "retail_shops") {
-    docData.reseller_id = idValue;
+    docData.reseller_id = docData.reseller_id || idValue;
   }
   if (path === "sla_admins") {
-    docData.account_id = idValue;
+    docData.account_id = docData.account_id || idValue;
   }
   if (path === "sla_staff") {
-    docData.staff_id = idValue;
+    docData.staff_id = docData.staff_id || idValue;
   }
   if (path === "system_settings") {
     docData.key = idValue;

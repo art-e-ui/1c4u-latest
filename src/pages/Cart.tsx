@@ -142,7 +142,7 @@ export default function Cart() {
       // 2. Create order document
       const orderData = {
         user_id: user?.id,
-        reseller_id: resellerId,
+        reseller_id: resellerData?.reseller_id ? String(resellerData.reseller_id) : resellerId,
         resellerId: humanResellerId || resellerId,
         reseller_uid: resellerId,
         resellerName: resellerData?.shop_name || resellerData?.shopName || resellerName || "Direct",
