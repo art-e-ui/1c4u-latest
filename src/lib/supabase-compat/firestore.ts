@@ -10,6 +10,7 @@ export const TABLE_COLUMNS: Record<string, string[]> = {
     "balance", "unpicked_balance", "password_reset_requested", "has_requested_password_reset", 
     "member_of_admin_id", "referred_by_staff_id", "referral_code", "total_earnings", 
     "total_deposits", "total_withdrawals", "total_orders", "pending_balance", "usdt_address", "bank_info",
+    "profile_picture", "shop_logo", "shop_hero_banner", "shop_slug", "store_theme",
     "system_upgraded_reset", "created_at", "updated_at"
   ],
   retail_shops: ["id", "shop_name", "level", "product_limit", "domain", "reseller_id", "star_rating", "credit_score", "created_at", "updated_at"],

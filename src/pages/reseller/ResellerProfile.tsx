@@ -5,13 +5,15 @@ import { db } from "@/lib/firebase";
 import { doc, updateDoc } from "firebase/firestore";
 import { useTranslation } from "react-i18next";
 
-const LEVEL_BADGE_MAP: Record<string, number> = {
-  "VIP-0": 0,
-  "VIP-1": 1,
-  "VIP-2": 2,
-  "VIP-3": 3,
-  "VIP-4": 4,
-  "VIP-5": 5,
+const getLevelNumber = (levelVal: any): number => {
+  if (levelVal === undefined || levelVal === null) return 0;
+  const str = String(levelVal).trim();
+  if (str.startsWith("VIP-")) {
+    const num = parseInt(str.replace("VIP-", ""), 10);
+    return isNaN(num) ? 0 : num;
+  }
+  const num = parseInt(str, 10);
+  return isNaN(num) ? 0 : num;
 };
 import { Link, useNavigate } from "react-router-dom";
 import { resellerPath, getStorefrontUrl } from "@/lib/subdomain";
@@ -78,7 +80,7 @@ export default function ResellerProfile() {
             {verificationStatus === "verified" ? t("reseller.verified") : verificationStatus === "pending" ? t("reseller.pending") : t("reseller.unverified")}
           </span>
           <img
-            src={`/badges/level-${LEVEL_BADGE_MAP[reseller.level] ?? 0}.png`}
+            src={`/badges/level-${getLevelNumber(reseller.level)}.png`}
             alt={`${reseller.level} badge`}
             className="h-16 w-16"
           />

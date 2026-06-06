@@ -13,13 +13,15 @@ import { collection, query, where, orderBy, getDocs, limit } from "firebase/fire
 
 const adBoostCard = adBoostCardImg;
 
-const LEVEL_BADGE_MAP: Record<string, number> = {
-  "VIP-0": 0,
-  "VIP-1": 1,
-  "VIP-2": 2,
-  "VIP-3": 3,
-  "VIP-4": 4,
-  "VIP-5": 5,
+const getLevelNumber = (levelVal: any): number => {
+  if (levelVal === undefined || levelVal === null) return 0;
+  const str = String(levelVal).trim();
+  if (str.startsWith("VIP-")) {
+    const num = parseInt(str.replace("VIP-", ""), 10);
+    return isNaN(num) ? 0 : num;
+  }
+  const num = parseInt(str, 10);
+  return isNaN(num) ? 0 : num;
 };
 
 export default function ResellerDashboard() {
@@ -146,7 +148,7 @@ export default function ResellerDashboard() {
             {verificationStatus === "verified" ? t("reseller.verified") : verificationStatus === "pending" ? t("reseller.pending") : t("reseller.unverified")}
           </span>
           <img
-            src={`/badges/level-${LEVEL_BADGE_MAP[reseller.level] ?? 0}.png`}
+            src={`/badges/level-${getLevelNumber(reseller.level)}.png`}
             alt={`${reseller.level} badge`}
             className="h-16 w-16"
           />
