@@ -1,0 +1,278 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@font-face {
+  font-family: 'SweetGetaway';
+  src: url('/fonts/SweetGetawayDemoRegular.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Design System — all tokens defined here for easy update.
+   Swap HSL values to rebrand instantly. */
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 240 27.3% 14.1%;
+
+    --brand-green: 120 100% 28.2%;
+    --brand-gold: 43 78% 43.5%;
+    --brand-dark: 240 27.3% 14.1%;
+    --brand-light: 60 20% 95.3%;
+
+    /* Primary = brand green */
+    --primary: 120 100% 28.2%;
+    --primary-foreground: 0 0% 100%;
+
+    /* Secondary = brand gold */
+    --secondary: 43 78% 43.5%;
+    --secondary-foreground: 0 0% 100%;
+
+    /* Accent = soft brand-light tint */
+    --accent: 60 20% 95.3%;
+    --accent-foreground: 240 27.3% 14.1%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 240 27.3% 14.1%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 27.3% 14.1%;
+
+    --muted: 60 10% 93%;
+    --muted-foreground: 240 5% 46%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 100%;
+
+    --warning: 32 95% 53%;
+    --warning-foreground: 0 0% 100%;
+
+    --info: 217 91% 60%;
+    --info-foreground: 0 0% 100%;
+
+    --success: 120 100% 28.2%;
+    --success-foreground: 0 0% 100%;
+
+    --border: 220 13% 91%;
+    --input: 220 13% 91%;
+    --ring: 120 100% 28.2%;
+
+    --radius: 0.5rem;
+
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 240 5.3% 26.1%;
+    --sidebar-primary: 120 100% 28.2%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 60 20% 95.3%;
+    --sidebar-accent-foreground: 240 5.9% 10%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 120 100% 28.2%;
+
+    /* Footer dark surface */
+    --footer-bg: 0 0% 4%;
+    --footer-text: 0 0% 70%;
+    --footer-heading: 120 100% 28.2%;
+  }
+
+  .dark {
+    --background: 240 27.3% 8%;
+    --foreground: 60 20% 95.3%;
+
+    --card: 240 27.3% 10%;
+    --card-foreground: 60 20% 95.3%;
+
+    --popover: 240 27.3% 10%;
+    --popover-foreground: 60 20% 95.3%;
+
+    --primary: 120 100% 35%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 43 78% 50%;
+    --secondary-foreground: 0 0% 100%;
+
+    --muted: 240 10% 18%;
+    --muted-foreground: 240 5% 65%;
+
+    --accent: 240 10% 18%;
+    --accent-foreground: 60 20% 95.3%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 100%;
+
+    --warning: 32 95% 50%;
+    --warning-foreground: 0 0% 100%;
+
+    --info: 217 91% 55%;
+    --info-foreground: 0 0% 100%;
+
+    --success: 120 100% 35%;
+    --success-foreground: 0 0% 100%;
+
+    --border: 240 10% 20%;
+    --input: 240 10% 20%;
+    --ring: 120 100% 35%;
+
+    --sidebar-background: 240 27.3% 8%;
+    --sidebar-foreground: 60 20% 95.3%;
+    --sidebar-primary: 120 100% 35%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 10% 15%;
+    --sidebar-accent-foreground: 60 20% 95.3%;
+    --sidebar-border: 240 10% 20%;
+    --sidebar-ring: 120 100% 35%;
+
+    --footer-bg: 0 0% 3%;
+    --footer-text: 0 0% 60%;
+    --footer-heading: 120 100% 35%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* Hero banner slide animations */
+@keyframes hero-fade-up {
+  0% { opacity: 0; transform: translateY(30px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+@keyframes hero-slide-left {
+  0% { opacity: 0; transform: translateX(-60px); }
+  100% { opacity: 1; transform: translateX(0); }
+}
+@keyframes hero-scale-in {
+  0% { opacity: 0; transform: scale(0.8); filter: blur(4px); }
+  100% { opacity: 1; transform: scale(1); filter: blur(0); }
+}
+@keyframes hero-slide-right {
+  0% { opacity: 0; transform: translateX(60px); }
+  100% { opacity: 1; transform: translateX(0); }
+}
+@keyframes hero-blur-in {
+  0% { opacity: 0; filter: blur(12px); }
+  100% { opacity: 1; filter: blur(0); }
+}
+
+.hero-anim-fade-up { animation: hero-fade-up 0.7s ease-out both; }
+.hero-anim-slide-left { animation: hero-slide-left 0.7s ease-out both; }
+.hero-anim-scale-in { animation: hero-scale-in 0.7s ease-out both; }
+.hero-anim-slide-right { animation: hero-slide-right 0.7s ease-out both; }
+.hero-anim-blur-in { animation: hero-blur-in 0.8s ease-out both; }
+
+.hero-delay-1 { animation-delay: 0ms; }
+.hero-delay-2 { animation-delay: 150ms; }
+.hero-delay-3 { animation-delay: 300ms; }
+.hero-delay-4 { animation-delay: 450ms; }
+.hero-delay-5 { animation-delay: 600ms; }
+
+/* Admin dashboard utilities */
+@keyframes fade-in {
+  0% { opacity: 0; transform: translateY(8px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+@keyframes slide-in-right {
+  0% { opacity: 0; transform: translateX(16px); }
+  100% { opacity: 1; transform: translateX(0); }
+}
+@keyframes scale-in {
+  0% { opacity: 0; transform: scale(0.95); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+.animate-fade-in { animation: fade-in 0.3s ease-out both; }
+.animate-slide-in-right { animation: slide-in-right 0.3s ease-out both; }
+.animate-scale-in { animation: scale-in 0.2s ease-out both; }
+
+@layer utilities {
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+  .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+  .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+  .custom-scrollbar::-webkit-scrollbar-track { @apply bg-transparent; }
+  .custom-scrollbar::-webkit-scrollbar-thumb { @apply bg-border rounded-full; }
+
+  .menu-item { @apply flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200; }
+  .menu-item-active { @apply bg-primary/10 text-primary; }
+  .menu-item-inactive { @apply text-muted-foreground hover:bg-accent hover:text-accent-foreground; }
+
+  .thead-label { @apply text-xs font-medium uppercase tracking-wider text-muted-foreground; }
+  .mono-badge { @apply font-mono text-xs bg-muted px-2 py-0.5 rounded-md; }
+
+  .shadow-theme-xs { box-shadow: 0 1px 2px 0 hsl(var(--foreground) / 0.04); }
+  .shadow-theme-sm { box-shadow: 0 1px 3px 0 hsl(var(--foreground) / 0.06), 0 1px 2px -1px hsl(var(--foreground) / 0.06); }
+  .shadow-theme-md { box-shadow: 0 4px 6px -1px hsl(var(--foreground) / 0.06), 0 2px 4px -2px hsl(var(--foreground) / 0.06); }
+  .shadow-theme-xl { box-shadow: 0 20px 25px -5px hsl(var(--foreground) / 0.08), 0 8px 10px -6px hsl(var(--foreground) / 0.08); }
+}
+
+/* Glass KPI card for reseller dashboard */
+.glass-kpi-card {
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(9px);
+  -webkit-backdrop-filter: blur(9px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.5),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.1),
+    inset 0 0 40px 20px rgba(255, 255, 255, 0.15);
+}
+.glass-kpi-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.8), transparent);
+}
+.glass-kpi-card::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 1px;
+  height: 100%;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.8), transparent, rgba(255, 255, 255, 0.3));
+}
+
+.dark .glass-kpi-card {
+  background: rgba(0, 144, 0, 0.08);
+  border: 1px solid rgba(0, 144, 0, 0.2);
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(0, 144, 0, 0.15),
+    inset 0 -1px 0 rgba(0, 144, 0, 0.05),
+    inset 0 0 40px 20px rgba(0, 144, 0, 0.03);
+}
+
+/* ── Seasonal Animations ── */
+@keyframes snowfall {
+  0% { transform: translateY(-20px) rotate(0deg); opacity: 0; }
+  10% { opacity: 1; }
+  90% { opacity: 0.6; }
+  100% { transform: translateY(100vh) rotate(360deg); opacity: 0; }
+}
+
+@keyframes float {
+  0%, 100% { transform: translate(0, 0) rotate(0deg); }
+  25% { transform: translate(10px, -15px) rotate(5deg); }
+  50% { transform: translate(-5px, -25px) rotate(-3deg); }
+  75% { transform: translate(-15px, -10px) rotate(3deg); }
+}
+
+.animate-snowfall {
+  animation: snowfall linear infinite;
+}
+
+.animate-float {
+  animation: float ease-in-out infinite;
+}

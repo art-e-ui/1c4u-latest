@@ -1,0 +1,277 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+    
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner() {
+      return isAuthenticated() && 
+        (request.auth.token.get('email', '').lower() == "kz4543176@gmail.com" || 
+         request.auth.token.get('email', '').lower() == "vannz4903@gmail.com" ||
+         request.auth.token.get('email', '').lower() == "arkarnaung009@gmail.com");
+    }
+
+    function isAdmin() {
+      return isOwner() || (
+        isAuthenticated() && 
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('role', '').lower() in ['admin', 'owner']
+      );
+    }
+
+    function isStaff() {
+      return isAdmin() || (
+        isAuthenticated() && 
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('role', '').lower() in ['staff', 'user']
+      );
+    }
+
+    function isReseller() {
+      return isAuthenticated() && 
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('role', '') == 'reseller';
+    }
+
+    function isDocOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // Validation Helpers (Eight Pillars)
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isValidUser(data) {
+      return data.keys().hasAll(['email', 'role']) && 
+             data.email is string && data.email.size() <= 256 &&
+             data.role in ['admin', 'owner', 'staff', 'reseller', 'customer'];
+    }
+
+    function isValidOrder(data) {
+      return data.keys().hasAll(['user_id', 'total_amount', 'status']) &&
+             data.user_id is string &&
+             data.total_amount is number &&
+             data.status in ["Pending", "pending", "processing", "shipped", "delivered", "cancelled", "Ongoing", "ongoing", "Completed", "completed"];
+    }
+
+    // ===============================================================
+    // Collection Rules
+    // ===============================================================
+
+    // Global Deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Users collection
+    match /users/{userId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && isValidUser(incoming());
+      allow update: if (isDocOwner(userId) || isAdmin()) && isValidUser(incoming());
+    }
+
+    // Products and Categories
+    match /products/{id} {
+      allow read: if true;
+      allow write: if isStaff();
+    }
+    match /categories/{id} {
+      allow read: if true;
+      allow write: if isStaff();
+    }
+
+    // Seasonal Themes
+    match /seasonal_themes/{id} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Orders
+    match /orders/{orderId} {
+      allow get: if isAuthenticated() && (
+        isOwner() ||
+        isStaff() ||
+        resource.data.get('user_id', '') == request.auth.uid ||
+        resource.data.get('reseller_id', '') == request.auth.uid ||
+        resource.data.get('resellerId', '') == request.auth.uid ||
+        resource.data.get('reseller_uid', '') == request.auth.uid ||
+        (exists(/databases/$(database)/documents/reseller_profiles/$(request.auth.uid)) && (
+          string(get(/databases/$(database)/documents/reseller_profiles/$(request.auth.uid)).data.get('reseller_id', '')) == resource.data.get('reseller_id', '') ||
+          string(get(/databases/$(database)/documents/reseller_profiles/$(request.auth.uid)).data.get('reseller_id', '')) == resource.data.get('resellerId', '') ||
+          "1CR" + string(get(/databases/$(database)/documents/reseller_profiles/$(request.auth.uid)).data.get('reseller_id', '')) == resource.data.get('reseller_id', '') ||
+          "1CR" + string(get(/databases/$(database)/documents/reseller_profiles/$(request.auth.uid)).data.get('reseller_id', '')) == resource.data.get('resellerId', '') ||
+          "GRS" + string(get(/databases/$(database)/documents/reseller_profiles/$(request.auth.uid)).data.get('reseller_id', '')) == resource.data.get('reseller_id', '') ||
+          "GRS" + string(get(/databases/$(database)/documents/reseller_profiles/$(request.auth.uid)).data.get('reseller_id', '')) == resource.data.get('resellerId', '')
+        ))
+      );
+      allow list: if isAuthenticated() && (
+        isOwner() ||
+        isStaff() ||
+        resource.data.get('user_id', '') == request.auth.uid ||
+        resource.data.get('reseller_id', '') == request.auth.uid ||
+        resource.data.get('resellerId', '') == request.auth.uid ||
+        resource.data.get('reseller_uid', '') == request.auth.uid
+      );
+      allow create: if isAuthenticated() && isValidOrder(incoming()) && (
+        incoming().get('user_id', '') == request.auth.uid ||
+        isStaff()
+      );
+      allow update: if (isStaff() || (
+        isAuthenticated() && 
+        (existing().get('user_id', '') == request.auth.uid || existing().get('reseller_id', '') == request.auth.uid || existing().get('resellerId', '') == request.auth.uid)
+      )) && isValidOrder(incoming());
+      allow delete: if isStaff() || isAdmin() || isOwner();
+      
+      match /order_items/{itemId} {
+        allow read: if isAuthenticated() && (
+          get(/databases/$(database)/documents/orders/$(orderId)).data.get('user_id', '') == request.auth.uid ||
+          get(/databases/$(database)/documents/orders/$(orderId)).data.get('reseller_id', '') == request.auth.uid ||
+          isStaff()
+        );
+        allow write: if (isAuthenticated() && (
+          !exists(/databases/$(database)/documents/orders/$(orderId)) ||
+          get(/databases/$(database)/documents/orders/$(orderId)).data.get('user_id', '') == request.auth.uid ||
+          isStaff()
+        ));
+      }
+    }
+
+    // Reseller Profiles
+    match /reseller_profiles/{userId} {
+      allow read: if isDocOwner(userId) || isStaff();
+      allow write: if isDocOwner(userId) || isStaff();
+    }
+
+    // Reseller Product Selection
+    match /reseller_product_selection/{selectionId} {
+      allow read: if true;
+      allow create: if isAuthenticated() && (incoming().get('reseller_id', '') == request.auth.uid || isStaff());
+      allow update: if isAuthenticated() && (existing().get('reseller_id', '') == request.auth.uid || isStaff());
+      allow delete: if isAuthenticated() && (existing().get('reseller_id', '') == request.auth.uid || isStaff());
+    }
+
+    // Retail Shops
+    match /retail_shops/{userId} {
+      allow read: if true;
+      allow write: if isDocOwner(userId) || isStaff();
+    }
+
+    // Deposit and Withdrawal Requests
+    match /deposit_requests/{id} {
+      allow read: if isStaff() || (isAuthenticated() && resource != null && (
+        resource.data.get('resellerDocId', '') == request.auth.uid ||
+        resource.data.get('reseller_id', '') == request.auth.uid
+      ));
+      allow create: if isAuthenticated();
+      allow update: if isStaff();
+    }
+    match /withdrawal_requests/{id} {
+      allow read: if isStaff() || (isAuthenticated() && resource != null && (
+        resource.data.get('resellerDocId', '') == request.auth.uid ||
+        resource.data.get('reseller_id', '') == request.auth.uid
+      ));
+      allow create: if isAuthenticated();
+      allow update: if isStaff();
+    }
+
+    // Chat Sessions and Messages
+    match /reseller_chat_sessions/{id} {
+      allow read: if isStaff() || (isAuthenticated() && resource != null && resource.data.get('reseller_id', '') == request.auth.uid);
+      allow write: if isAuthenticated();
+    }
+    match /reseller_chat_messages/{id} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated();
+      allow delete: if isStaff();
+    }
+    match /reseller_customer_chat_sessions/{id} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated();
+    }
+    match /reseller_customer_chat_messages/{id} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated();
+      allow delete: if isStaff();
+    }
+
+    // Support Chat (Public read/write to allow unauthenticated visitor widgets to chat)
+    match /support_sessions/{id} {
+      allow read, write: if true;
+    }
+    match /support_messages/{id} {
+      allow read, write: if true;
+      allow delete: if isStaff();
+    }
+
+    // System Settings
+    match /system_settings/{id} {
+      allow read: if true;
+      allow write: if isAdmin() || (isAuthenticated() && id == 'connection_test'); // Allow for connection test
+    }
+
+    // Reviews
+    match /reviews/{id} {
+      allow read: if true;
+      allow create: if isAuthenticated();
+      allow update, delete: if isAdmin() || (isAuthenticated() && resource != null && resource.data.get('user_id', '') == request.auth.uid);
+    }
+
+    // Broadcast Notifications
+    match /broadcast_notifications/{id} {
+      allow read: if true;
+      allow write: if isStaff();
+    }
+
+    // Reseller Notifications
+    match /reseller_notifications/{id} {
+      allow read: if isAuthenticated() && (resource.data.get('reseller_id', '') == request.auth.uid || isStaff());
+      allow write: if isStaff();
+    }
+
+    // SLA Admin and Staff
+    match /sla_admins/{id} {
+      allow read: if isStaff();
+      allow write: if isAdmin();
+    }
+    match /sla_staff/{id} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+
+    // ACH and Virtual Profiles
+    match /ach_customers/{id} {
+      allow read, write: if isAdmin();
+    }
+    match /ach_financials/{id} {
+      allow read, write: if isAdmin();
+    }
+    match /virtual_profiles/{id} {
+      allow read: if true;
+      allow write: if isStaff();
+    }
+    match /virtual_customer_profiles/{id} {
+      allow read: if true;
+      allow write: if isStaff();
+    }
+
+    // Connection Test
+    match /_connection_test_/{docId} {
+      allow read: if true;
+      allow write: if isAuthenticated();
+    }
+  }
+}

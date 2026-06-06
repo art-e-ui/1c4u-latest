@@ -1,0 +1,14 @@
+{
+  "projects": {
+    "default": "gen-lang-client-0041853003"
+  },
+  "targets": {
+    "gen-lang-client-0041853003": {
+      "firestore": {
+        "main": [
+          "global-cart-prod-us"
+        ]
+      }
+    }
+  }
+}

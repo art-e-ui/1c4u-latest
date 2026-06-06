@@ -1,0 +1,61 @@
+export interface VirtualProfile {
+  id: string;
+  name: string;
+  email: string;
+  shipping_address: string;
+  region: string;
+  status: string;
+}
+
+export const STATIC_VIRTUAL_PROFILES: VirtualProfile[] = [
+  { id: "vp-1", name: "Budi Santoso", email: "budi.santoso@example.com", shipping_address: "Jl. Sudirman No. 123, Jakarta", region: "Jakarta", status: "active" },
+  { id: "vp-2", name: "Siti Aminah", email: "siti.aminah@example.com", shipping_address: "Jl. Merdeka No. 456, Surabaya", region: "Surabaya", status: "active" },
+  { id: "vp-3", name: "Agus Setiawan", email: "agus.setiawan@example.com", shipping_address: "Jl. Asia Afrika No. 789, Bandung", region: "Bandung", status: "active" },
+  { id: "vp-4", name: "Sri Wahyuni", email: "sri.wahyuni@example.com", shipping_address: "Jl. Diponegoro No. 101, Medan", region: "Medan", status: "active" },
+  { id: "vp-5", name: "Bambang Hermawan", email: "bambang.hermawan@example.com", shipping_address: "Jl. Gajah Mada No. 202, Semarang", region: "Semarang", status: "active" },
+  { id: "vp-6", name: "Ratna Sari", email: "ratna.sari@example.com", shipping_address: "Jl. Malioboro No. 303, Yogyakarta", region: "Yogyakarta", status: "active" },
+  { id: "vp-7", name: "Dedi Kurniawan", email: "dedi.kurniawan@example.com", shipping_address: "Jl. Pemuda No. 404, Palembang", region: "Palembang", status: "active" },
+  { id: "vp-8", name: "Ani Lestari", email: "ani.lestari@example.com", shipping_address: "Jl. Ahmad Yani No. 505, Makassar", region: "Makassar", status: "active" },
+  { id: "vp-9", name: "Hendra Wijaya", email: "hendra.wijaya@example.com", shipping_address: "Jl. Slamet Riyadi No. 606, Surakarta", region: "Surakarta", status: "active" },
+  { id: "vp-10", name: "Maya Puspita", email: "maya.puspita@example.com", shipping_address: "Jl. Veteran No. 707, Malang", region: "Malang", status: "active" },
+  { id: "vp-11", name: "Juan Reyes", email: "juan.reyes@example.com", shipping_address: "123 Rizal Ave, Manila", region: "Manila", status: "active" },
+  { id: "vp-12", name: "Maria Santos", email: "maria.santos@example.com", shipping_address: "456 Quezon Blvd, Quezon City", region: "Quezon City", status: "active" },
+  { id: "vp-13", name: "Jose Mariano", email: "jose.mariano@example.com", shipping_address: "789 Roxas Blvd, Davao City", region: "Davao City", status: "active" },
+  { id: "vp-14", name: "Angelica Sanchez", email: "angelica.sanchez@example.com", shipping_address: "101 Osmeña Blvd, Cebu City", region: "Cebu City", status: "active" },
+  { id: "vp-15", name: "Manuel Garcia", email: "manuel.garcia@example.com", shipping_address: "202 Mayor Vitaliano Agan Ave, Zamboanga City", region: "Zamboanga City", status: "active" },
+  { id: "vp-16", name: "Catherine Reyes", email: "catherine.reyes@example.com", shipping_address: "303 J.P. Laurel Ave, Davao City", region: "Davao City", status: "active" },
+  { id: "vp-17", name: "Fernando Lopez", email: "fernando.lopez@example.com", shipping_address: "404 Ayala Ave, Makati", region: "Makati", status: "active" },
+  { id: "vp-18", name: "Cory Santos", email: "cory.santos@example.com", shipping_address: "505 Shaw Blvd, Pasig", region: "Pasig", status: "active" },
+  { id: "vp-19", name: "Rodolfo Cruz", email: "rodolfo.cruz@example.com", shipping_address: "606 Taft Ave, Manila", region: "Manila", status: "active" },
+  { id: "vp-20", name: "Elena Bautista", email: "elena.bautista@example.com", shipping_address: "707 Katipunan Ave, Quezon City", region: "Quezon City", status: "active" },
+  { id: "vp-21", name: "Mohammed Al-Farsi", email: "mohammed.alfarsi@example.com", shipping_address: "Sheikh Zayed Rd, Dubai", region: "Dubai", status: "active" },
+  { id: "vp-22", name: "Fatima Zahra", email: "fatima.zahra@example.com", shipping_address: "King Fahd Rd, Riyadh", region: "Riyadh", status: "active" },
+  { id: "vp-23", name: "Ahmed Hassan", email: "ahmed.hassan@example.com", shipping_address: "Tahrir Square, Cairo", region: "Cairo", status: "active" },
+  { id: "vp-24", name: "Aisha Mahmoud", email: "aisha.mahmoud@example.com", shipping_address: "Rainbow St, Amman", region: "Amman", status: "active" },
+  { id: "vp-25", name: "Omar Al-Khattab", email: "omar.alkhattab@example.com", shipping_address: "Corniche Rd, Doha", region: "Doha", status: "active" },
+  { id: "vp-26", name: "Layla Ibrahim", email: "layla.ibrahim@example.com", shipping_address: "Hamra St, Beirut", region: "Beirut", status: "active" },
+  { id: "vp-27", name: "Khalid Ahmed", email: "khalid.ahmed@example.com", shipping_address: "Jumeirah Beach Rd, Dubai", region: "Dubai", status: "active" },
+  { id: "vp-28", name: "Mariam Khaled", email: "mariam.khaled@example.com", shipping_address: "Olaya St, Riyadh", region: "Riyadh", status: "active" },
+  { id: "vp-29", name: "Yusuf Ali", email: "yusuf.ali@example.com", shipping_address: "Zamalek, Cairo", region: "Cairo", status: "active" },
+  { id: "vp-30", name: "Zainab Hassan", email: "zainab.hassan@example.com", shipping_address: "Abdoun, Amman", region: "Amman", status: "active" },
+  { id: "vp-31", name: "Eko Prasetyo", email: "eko.prasetyo@example.com", shipping_address: "Jl. Thamrin No. 808, Jakarta", region: "Jakarta", status: "active" },
+  { id: "vp-32", name: "Dewi Sartika", email: "dewi.sartika@example.com", shipping_address: "Jl. Braga No. 909, Bandung", region: "Bandung", status: "active" },
+  { id: "vp-33", name: "Rizky Ramadhan", email: "rizky.ramadhan@example.com", shipping_address: "Jl. Pandanaran No. 111, Semarang", region: "Semarang", status: "active" },
+  { id: "vp-34", name: "Putri Indah", email: "putri.indah@example.com", shipping_address: "Jl. Basuki Rahmat No. 222, Surabaya", region: "Surabaya", status: "active" },
+  { id: "vp-35", name: "Aditya Wijaya", email: "aditya.wijaya@example.com", shipping_address: "Jl. Jendral Sudirman No. 333, Medan", region: "Medan", status: "active" },
+  { id: "vp-36", name: "Paolo Santos", email: "paolo.santos@example.com", shipping_address: "444 Makati Ave, Makati", region: "Makati", status: "active" },
+  { id: "vp-37", name: "Liza Soberano", email: "liza.soberano@example.com", shipping_address: "555 Ortigas Center, Pasig", region: "Pasig", status: "active" },
+  { id: "vp-38", name: "Daniel Padilla", email: "daniel.padilla@example.com", shipping_address: "666 Bonifacio Global City, Taguig", region: "Taguig", status: "active" },
+  { id: "vp-39", name: "Kathryn Bernardo", email: "kathryn.bernardo@example.com", shipping_address: "777 Aurora Blvd, Quezon City", region: "Quezon City", status: "active" },
+  { id: "vp-40", name: "Piolo Pascual", email: "piolo.pascual@example.com", shipping_address: "888 España Blvd, Manila", region: "Manila", status: "active" },
+  { id: "vp-41", name: "Abdullah Al-Sayed", email: "abdullah.alsayed@example.com", shipping_address: "Diplomatic Area, Manama", region: "Manama", status: "active" },
+  { id: "vp-42", name: "Noor Al-Falah", email: "noor.alfalah@example.com", shipping_address: "Salmiya, Kuwait City", region: "Kuwait City", status: "active" },
+  { id: "vp-43", name: "Mustafa Kamal", email: "mustafa.kamal@example.com", shipping_address: "Ataturk Blvd, Ankara", region: "Ankara", status: "active" },
+  { id: "vp-44", name: "Yasmin Rashid", email: "yasmin.rashid@example.com", shipping_address: "Gulberg, Lahore", region: "Lahore", status: "active" },
+  { id: "vp-45", name: "Ibrahim Khalil", email: "ibrahim.khalil@example.com", shipping_address: "Dhanmondi, Dhaka", region: "Dhaka", status: "active" },
+  { id: "vp-46", name: "Siti Zubaidah", email: "siti.zubaidah@example.com", shipping_address: "Bukit Bintang, Kuala Lumpur", region: "Kuala Lumpur", status: "active" },
+  { id: "vp-47", name: "Wei Ming", email: "wei.ming@example.com", shipping_address: "Orchard Rd, Singapore", region: "Singapore", status: "active" },
+  { id: "vp-48", name: "Somchai Prajak", email: "somchai.prajak@example.com", shipping_address: "Sukhumvit Rd, Bangkok", region: "Bangkok", status: "active" },
+  { id: "vp-49", name: "Nguyen Van Hung", email: "nguyen.vanhung@example.com", shipping_address: "Hoan Kiem, Hanoi", region: "Hanoi", status: "active" },
+  { id: "vp-50", name: "Chan Dara", email: "chan.dara@example.com", shipping_address: "Norodom Blvd, Phnom Penh", region: "Phnom Penh", status: "active" },
+];

@@ -1,0 +1,156 @@
+src/components/home/DealsOfTheDay.tsx:33:    const d = new Date();
+src/components/reseller/ResellerDepositSheet.tsx:178:          createdAt: new Date().toISOString(),
+src/components/reseller/ResellerDepositSheet.tsx:200:            `📅 Date: ${new Date().toLocaleString()}`;
+src/components/reseller/FinancialStatementsSheet.tsx:86:          new Date(b.date).getTime() - new Date(a.date).getTime()
+src/components/reseller/ResellerLayout.tsx:47:            last_message_at: new Date().toISOString()
+src/components/reseller/ResellerLayout.tsx:55:            last_message_at: new Date().toISOString(),
+src/components/reseller/ResellerLayout.tsx:56:            created_at: new Date().toISOString()
+src/components/reseller/ResellerWithdrawalSheet.tsx:114:      records.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+src/components/reseller/ResellerWithdrawalSheet.tsx:152:          updated_at: new Date().toISOString()
+src/components/reseller/ResellerWithdrawalSheet.tsx:164:          createdAt: new Date().toISOString(),
+src/components/reseller/ResellerWithdrawalSheet.tsx:179:          `📅 Date: ${new Date().toLocaleString()}`;
+src/components/messaging/NotificationDialog.tsx:62:      allNotifs.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+src/components/messaging/NotificationDialog.tsx:132:                  {new Date(selectedNotif.timestamp).toLocaleString()}
+src/components/messaging/NotificationDialog.tsx:152:                  <span className="text-[10px] text-muted-foreground/60">{new Date(n.timestamp).toLocaleDateString()}</span>
+src/components/messaging/ResellerChatDialog.tsx:186:                      {new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+src/components/messaging/SupportChatDialog.tsx:106:        created_at: new Date().toISOString()
+src/components/messaging/SupportChatDialog.tsx:111:        last_message_at: new Date().toISOString() 
+src/components/messaging/SupportChatDialog.tsx:158:          created_at: new Date().toISOString()
+src/components/messaging/SupportChatDialog.tsx:162:          last_message_at: new Date().toISOString() 
+src/components/messaging/SupportChatDialog.tsx:227:                      {new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+src/hooks/use-support.ts:141:      last_message_at: new Date().toISOString(),
+src/hooks/use-db-products.ts:92:        created_at: new Date().toISOString()
+src/hooks/use-db-products.ts:182:        created_at: new Date().toISOString()
+src/hooks/use-db-products.ts:340:            created_at: new Date().toISOString()
+src/hooks/use-db-products.ts:348:            updated_at: new Date().toISOString()
+src/hooks/use-reseller-chat.ts:58:      last_message_at: new Date().toISOString(),
+src/hooks/use-reseller-chat.ts:59:      created_at: new Date().toISOString()
+src/hooks/use-reseller-chat.ts:94:        new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+src/hooks/use-reseller-chat.ts:125:        created_at: new Date().toISOString()
+src/hooks/use-reseller-chat.ts:129:        last_message_at: new Date().toISOString()
+src/hooks/use-fcm-token.ts:36:                  last_token_update: new Date().toISOString()
+src/hooks/use-financial-requests.ts:59:      const sorted = data.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+src/hooks/use-financial-requests.ts:83:      const sorted = data.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+src/hooks/use-financial-requests.ts:106:      const updateData: Record<string, unknown> = { status, updatedAt: new Date().toISOString() };
+src/hooks/use-financial-requests.ts:118:      const updateData: Record<string, unknown> = { status, updatedAt: new Date().toISOString() };
+src/hooks/use-orders.ts:108:        updated_at: new Date().toISOString()
+src/hooks/use-orders.ts:112:        updateData.picked_up_at = new Date().toISOString();
+src/hooks/use-orders.ts:114:        updateData.completed_at = new Date().toISOString();
+src/hooks/use-orders.ts:169:              updated_at: new Date().toISOString()
+src/hooks/use-orders.ts:207:        updated_at: new Date().toISOString()
+src/hooks/use-orders.ts:225:              updated_at: new Date().toISOString()
+src/hooks/use-orders.ts:232:              updated_at: new Date().toISOString()
+src/pages/admin/AdminResellersPage.tsx:211:        registration_date: new Date().toISOString(),
+src/pages/admin/AdminResellersPage.tsx:223:          `📅 Date: ${new Date().toLocaleString()}`;
+src/pages/admin/AdminResellersPage.tsx:253:        created_at: new Date().toISOString(),
+src/pages/admin/AdminResellersPage.tsx:281:        updated_at: new Date().toISOString()
+src/pages/admin/AdminResellersPage.tsx:287:        updated_at: new Date().toISOString()
+src/pages/admin/AdminResellersPage.tsx:314:        created_at: new Date().toISOString(),
+src/pages/admin/AdminResellersPage.tsx:399:                        created_at: new Date().toISOString()
+src/pages/admin/CustomerServicePage.tsx:163:        created_at: new Date().toISOString()
+src/pages/admin/CustomerServicePage.tsx:167:        last_message_at: new Date().toISOString()
+src/pages/admin/CustomerServicePage.tsx:197:          created_at: new Date().toISOString()
+src/pages/admin/CustomerServicePage.tsx:201:          last_message_at: new Date().toISOString()
+src/pages/admin/CustomerServicePage.tsx:237:        created_at: new Date().toISOString()
+src/pages/admin/CustomerServicePage.tsx:241:        last_message_at: new Date().toISOString()
+src/pages/admin/CustomerServicePage.tsx:310:                    {new Date(s.last_message_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+src/pages/admin/CustomerServicePage.tsx:392:                          {new Date(m.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+src/pages/admin/ARSTrackOrdersPage.tsx:311:        updateData.completed_at = new Date().toISOString();
+src/pages/admin/ARSTrackOrdersPage.tsx:313:        updateData.picked_up_at = new Date().toISOString();
+src/pages/admin/ARSTrackOrdersPage.tsx:509:                    {order.createdAt ? new Date(order.createdAt).toLocaleDateString() : "-"}
+src/pages/admin/ARSTrackOrdersPage.tsx:512:                    {order.pickedUpAt ? new Date(order.pickedUpAt).toLocaleDateString() : "-"}
+src/pages/admin/ARSTrackOrdersPage.tsx:515:                    {order.completedAt ? new Date(order.completedAt).toLocaleDateString() : "-"}
+src/pages/admin/ARSTrackOrdersPage.tsx:593:              <Row label="Created" value={viewOrder.createdAt ? new Date(viewOrder.createdAt).toLocaleDateString() : "-"} />
+src/pages/admin/ARSTrackOrdersPage.tsx:594:              <Row label="Picked Up" value={viewOrder.pickedUpAt ? new Date(viewOrder.pickedUpAt).toLocaleDateString() : "-"} />
+src/pages/admin/ARSTrackOrdersPage.tsx:595:              <Row label="Completed" value={viewOrder.completedAt ? new Date(viewOrder.completedAt).toLocaleDateString() : "-"} />
+src/pages/admin/AdminAdminsPage.tsx:188:                        {admin.lastLogin ? format(new Date(admin.lastLogin), "MMM d, HH:mm") : "N/A"}
+src/pages/admin/ARSDepositPage.tsx:94:        updatedAt: new Date().toISOString(),
+src/pages/admin/ARSDepositPage.tsx:188:        updated_at: new Date().toISOString()
+src/pages/admin/ARSDepositPage.tsx:207:        updated_at: new Date().toISOString()
+src/pages/admin/ARSDepositPage.tsx:321:                    {req.createdAt ? format(new Date(req.createdAt), "MMM dd, yyyy HH:mm") : "N/A"}
+src/pages/admin/ARSDepositPage.tsx:456:                    <span>{viewRequest.createdAt ? format(new Date(viewRequest.createdAt), "yyyy-MM-dd HH:mm") : "N/A"}</span>
+src/pages/admin/ARSRetailShopsPage.tsx:139:        created_at: new Date().toISOString(),
+src/pages/admin/ARSWithdrawalPage.tsx:118:          updated_at: new Date().toISOString()
+src/pages/admin/ARSWithdrawalPage.tsx:155:          updated_at: new Date().toISOString()
+src/pages/admin/ARSWithdrawalPage.tsx:236:                    {req.createdAt ? format(new Date(req.createdAt), "MMM dd, yyyy HH:mm") : "N/A"}
+src/pages/admin/ARSWithdrawalPage.tsx:370:                  <span>{viewRequest.createdAt ? format(new Date(viewRequest.createdAt), "yyyy-MM-dd HH:mm") : "N/A"}</span>
+src/pages/admin/BroadcastNewsPage.tsx:57:        broadcast_date: new Date().toISOString()
+src/pages/admin/BroadcastNewsPage.tsx:153:                    {new Date(n.broadcast_date).toLocaleDateString("en-US", {
+src/pages/admin/VirtualOrderServicesPage.tsx:221:        created_at: new Date().toISOString(),
+src/pages/admin/VirtualOrderServicesPage.tsx:222:        createdAt: new Date().toISOString(),
+src/pages/admin/VirtualOrderServicesPage.tsx:262:          created_at: new Date().toISOString()
+src/pages/admin/VirtualOrderServicesPage.tsx:274:        updated_at: new Date().toISOString()
+src/pages/admin/SQCVirtualOrdersPage.tsx:376:        created_at: new Date().toISOString(), // For customer page
+src/pages/admin/SQCVirtualOrdersPage.tsx:377:        createdAt: new Date().toISOString(), // For reseller page
+src/pages/admin/SQCVirtualOrdersPage.tsx:404:          created_at: new Date().toISOString()
+src/pages/admin/SQCVirtualOrdersPage.tsx:417:          updated_at: new Date().toISOString()
+src/pages/admin/SQCVirtualOrdersPage.tsx:1007:                        {new Date(order.createdAt).toLocaleString()}
+src/pages/admin/ARSPaymentInfoPage.tsx:165:          updated_at: new Date().toISOString()
+src/pages/admin/ARSPaymentInfoPage.tsx:171:          updated_at: new Date().toISOString()
+src/pages/admin/ARSPaymentInfoPage.tsx:252:        lastActivity: r.registrationDate || new Date().toISOString()
+src/pages/admin/ResellerProfilePage.tsx:61:        registrationDate: r.registrationDate ? new Date(r.registrationDate).toLocaleDateString() : 'N/A',
+src/pages/admin/ResellerProfilePage.tsx:83:    const dateA = new Date(a.rawDate || 0).getTime();
+src/pages/admin/ResellerProfilePage.tsx:84:    const dateB = new Date(b.rawDate || 0).getTime();
+src/pages/admin/Reseller2AdminPage.tsx:154:        last_message_at: new Date(0).toISOString(),
+src/pages/admin/Reseller2AdminPage.tsx:226:        new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+src/pages/admin/Reseller2AdminPage.tsx:284:            last_message_at: new Date().toISOString()
+src/pages/admin/Reseller2AdminPage.tsx:319:        created_at: new Date().toISOString()
+src/pages/admin/Reseller2AdminPage.tsx:323:        last_message_at: new Date().toISOString(),
+src/pages/admin/Reseller2AdminPage.tsx:414:      return new Date(b.last_message_at).getTime() - new Date(a.last_message_at).getTime();
+src/pages/admin/Reseller2AdminPage.tsx:563:                      {new Date(s.last_message_at).getTime() > 0 
+src/pages/admin/Reseller2AdminPage.tsx:564:                        ? new Date(s.last_message_at).toLocaleDateString([], { month: "short", day: "numeric" })
+src/pages/admin/Reseller2AdminPage.tsx:689:                          {new Date(m.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+src/pages/admin/SLAAdministratorPage.tsx:367:                { label: "Joined", value: new Date(selectedAdmin.joinedAt).toLocaleDateString("en", { month: "short", year: "2-digit" }), icon: User },
+src/pages/admin/AdminInventoryPage.tsx:946:                      <p>Last Sync: {syncStatus.lastPeriodicSync ? new Date(syncStatus.lastPeriodicSync).toLocaleString() : 'Never'}</p>
+src/pages/admin/VirtualCustomerServicesPage.tsx:271:        new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+src/pages/admin/VirtualCustomerServicesPage.tsx:326:          last_message_at: new Date().toISOString(),
+src/pages/admin/VirtualCustomerServicesPage.tsx:327:          created_at: new Date().toISOString()
+src/pages/admin/VirtualCustomerServicesPage.tsx:340:        created_at: new Date().toISOString()
+src/pages/admin/VirtualCustomerServicesPage.tsx:346:        last_message_at: new Date().toISOString()
+src/pages/admin/SQCVirtualProfilePage.tsx:241:        created_at: new Date().toISOString(),
+src/pages/admin/SQCVirtualProfilePage.tsx:242:        createdAt: new Date().toISOString(),
+src/pages/admin/SQCVirtualProfilePage.tsx:260:        updated_at: new Date().toISOString()
+src/pages/admin/SQCVirtualProfilePage.tsx:501:        created_at: new Date().toISOString()
+src/pages/admin/SQCVirtualProfilePage.tsx:505:        last_message_at: new Date().toISOString(),
+src/pages/admin/SQCVirtualProfilePage.tsx:549:      return new Date(b.last_message_at).getTime() - new Date(a.last_message_at).getTime();
+src/pages/admin/SQCVirtualProfilePage.tsx:955:                        {new Date(s.last_message_at).toLocaleDateString([], { month: "short", day: "numeric" })}
+src/pages/admin/SQCVirtualProfilePage.tsx:1053:                            {new Date(m.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+src/pages/reseller/ResellerDashboard.tsx:51:        broadcast_date: data.broadcast_date || new Date().toISOString(),
+src/pages/reseller/ResellerAnnouncements.tsx:40:          broadcast_date: data.broadcast_date || new Date().toISOString(),
+src/pages/reseller/ResellerAnnouncements.tsx:64:      return new Date(dateStr).toLocaleString("en-US", {
+src/pages/reseller/ResellerAnnouncements.tsx:162:                            {new Date(ann.broadcast_date).toLocaleDateString()}
+src/pages/reseller/ResellerOrders.tsx:116:        const dateA = new Date(a.createdAt).getTime();
+src/pages/reseller/ResellerOrders.tsx:117:        const dateB = new Date(b.createdAt).getTime();
+src/pages/reseller/ResellerMessages.tsx:92:          last_message_at: new Date().toISOString(),
+src/pages/reseller/ResellerMessages.tsx:93:          created_at: new Date().toISOString()
+src/pages/reseller/ResellerMessages.tsx:128:        new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+src/pages/reseller/ResellerMessages.tsx:168:        created_at: new Date().toISOString()
+src/pages/reseller/ResellerMessages.tsx:172:        last_message_at: new Date().toISOString(),
+src/pages/reseller/ResellerMessages.tsx:272:                  {new Date(m.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+src/pages/reseller/ResellerMessages.tsx:356:        new Date(b.last_message_at).getTime() - new Date(a.last_message_at).getTime()
+src/pages/reseller/ResellerMessages.tsx:385:        new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+src/pages/reseller/ResellerMessages.tsx:422:        created_at: new Date().toISOString()
+src/pages/reseller/ResellerMessages.tsx:426:        last_message_at: new Date().toISOString()
+src/pages/reseller/ResellerMessages.tsx:497:                {new Date(s.last_message_at).toLocaleDateString()}
+src/pages/reseller/ResellerMessages.tsx:544:                      {new Date(m.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+src/pages/Cart.tsx:166:        created_at: new Date().toISOString(),
+src/pages/Cart.tsx:167:        createdAt: new Date().toISOString(),
+src/pages/Cart.tsx:211:          updated_at: new Date().toISOString()
+src/pages/Orders.tsx:128:            date: new Date(orderData.created_at as string).toLocaleDateString(),
+src/pages/Orders.tsx:130:            estimatedDelivery: new Date(new Date(orderData.created_at as string).getTime() + 7 * 24 * 60 * 60 * 1000).toLocaleDateString(),
+src/pages/ProductDetail.tsx:52:  const dateStr = new Date(review.created_at).toLocaleDateString();
+src/lib/reseller-context.tsx:45:  joinedAt: new Date().toISOString(),
+src/lib/reseller-context.tsx:237:        const regDate = new Date(profileData.registration_date).getTime();
+src/lib/reseller-context.tsx:263:          created_at: new Date().toISOString()
+src/lib/reseller-context.tsx:394:        created_at: new Date().toISOString(),
+src/lib/reseller-context.tsx:426:        registration_date: new Date().toISOString(),
+src/lib/reseller-context.tsx:438:        created_at: new Date().toISOString(),
+src/lib/reseller-context.tsx:449:          `📅 Date: ${new Date().toLocaleString()}`;
+src/lib/customer-auth-context.tsx:123:            `📅 Date: ${new Date().toLocaleString()}`;
+src/lib/supabase-compat/firestore.ts:634:  return new Date().toISOString();
+src/lib/firebase.ts:123:            timestamp: new Date().toISOString(),
+src/lib/admin-auth-context.tsx:63:            created_at: new Date().toISOString()
+src/context/ProductSyncContext.tsx:12:  const [nextSync, setNextSync] = useState<Date | null>(new Date(Date.now() + SYNC_INTERVAL));
+src/context/ProductSyncContext.tsx:55:      setLastSync(new Date());
+src/context/ProductSyncContext.tsx:56:      setNextSync(new Date(Date.now() + SYNC_INTERVAL));
+src/context/ProductSyncContext.tsx:86:      setNextSync(new Date(Date.now() + SYNC_INTERVAL));

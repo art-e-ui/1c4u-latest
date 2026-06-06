@@ -1,0 +1,15 @@
+[dotenv@17.3.1] injecting env (0) from .env -- tip: 🔐 prevent committing .env to code: https://dotenvx.com/precommit
+Found service-account.json! Initializing Firestore Admin SDK with service account...
+Connecting to Firestore database [ai-studio-60fdf148-b609-4c68-97a8-d9fe9841d742]...
+
+========================================================
+            STARTING BATCH-MAPPED DATABASE MIGRATION
+========================================================
+
+Preloading lookup registries...
+(node:4435) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+  - Loaded 14 users for reference.
+
+Detecting Virtual Customers/Profiles in orders & sessions...
+  ⚠️ Error while pre-registering virtual user stubs: 8 RESOURCE_EXHAUSTED: Quota limit exceeded. Retry after quota limits are reset or enable billing for this project to avoid quota checks. Cause - Quota exceeded for quota metric 'Free daily read units per project (free tier database)' and limit 'Free daily read units per project (free tier database) per day' of service 'firestore.googleapis.com' for consumer 'project_number:518258779291'. This database cannot exceed free quota limits even when a billing instrument is enabled.

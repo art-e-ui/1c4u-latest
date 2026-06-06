@@ -1,0 +1,71 @@
+{
+  "id": "com.1-cartforu.reseller",
+  "name": "1-CartForU Reseller Management",
+  "short_name": "1CU Reseller",
+  "description": "The official reseller portal for 1-CartForU. Manage your shop, track orders, and boost your sales.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#00AAFF",
+  "orientation": "any",
+  "lang": "en",
+  "dir": "ltr",
+  "gcm_sender_id": "518258779291",
+  "categories": ["shopping", "business"],
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=1280&h=720&auto=format&fit=crop",
+      "sizes": "1280x720",
+      "type": "image/jpeg",
+      "form_factor": "wide",
+      "label": "1-CartForU Desktop Dashboard"
+    },
+    {
+      "src": "https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=720&h=1280&auto=format&fit=crop",
+      "sizes": "720x1280",
+      "type": "image/jpeg",
+      "form_factor": "narrow",
+      "label": "1-CartForU Mobile View"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Dashboard",
+      "url": "/",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" }]
+    },
+    {
+      "name": "Orders",
+      "url": "/orders",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" }]
+    }
+  ],
+  "prefer_related_applications": false
+}

@@ -1,0 +1,233 @@
+[dotenv@17.3.1] injecting env (0) from .env -- tip: 🔐 prevent committing .env to code: https://dotenvx.com/precommit
+Found service-account.json! Initializing Firestore Admin SDK with service account...
+Connecting to Firestore database [ai-studio-60fdf148-b609-4c68-97a8-d9fe9841d742]...
+
+========================================================
+            STARTING BATCH-MAPPED DATABASE MIGRATION
+========================================================
+
+Preloading lookup registries...
+(node:879) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+  - Loaded 14 users for reference.
+
+Detecting Virtual Customers/Profiles in orders & sessions...
+  - Found 14 unregistered user profiles referenced in operations.
+  - Automatically registering stubs in the 'users' primary registry to satisfy foreign key checks...
+  ❌ Virtual users auto-registration failed: duplicate key value violates unique constraint "users_email_key"
+  - Loaded 8 chat sessions for reference.
+
+Analyzing unique categories from products to satisfy Foreign Key constraints...
+  - Found 56 unique categories listed across products.
+  - Successfully established 56 parent categories in Supabase.
+
+>>> Migrating [users]...
+Found 14 documents in Firestore [users] collection.
+  Upserting batch 1 (14 records) to [users]...
+  ⚠️ Batch upsert for 14 records in [users] failed: duplicate key value violates unique constraint "users_email_key". Retrying row-by-row...
+  ❌ Row upsert failed for ID [SjzWCAkU61Q9vBCKITaK7pSMj7G3] in [users]: duplicate key value violates unique constraint "users_email_key"
+  ❌ Row upsert failed for ID [iz3xDMsLaEYesScvhiW8UWoXPBY2] in [users]: duplicate key value violates unique constraint "users_email_key"
+  ❌ Row upsert failed for ID [j5ijXOor8Dflgsj7aZZfkajEbGR2] in [users]: duplicate key value violates unique constraint "users_email_key"
+  ❌ Row upsert failed for ID [kHLXGc6T1OShFEF2PXamCWj3mSW2] in [users]: duplicate key value violates unique constraint "users_email_key"
+  ❌ Row upsert failed for ID [1LcObVZWcVNdT9x8yWaeETmbbbv1] in [users]: duplicate key value violates unique constraint "users_email_key"
+  ❌ Row upsert failed for ID [fgC0f1rxGNhkLCOub0bZFQFbXph2] in [users]: duplicate key value violates unique constraint "users_email_key"
+  ❌ Row upsert failed for ID [rZI9cHMS2VecIDjBsTFpA8ksWt23] in [users]: duplicate key value violates unique constraint "users_email_key"
+  ❌ Row upsert failed for ID [QbDuYoE01PfiZWkbUkNB3ONkm4K2] in [users]: duplicate key value violates unique constraint "users_email_key"
+  ❌ Row upsert failed for ID [RyYKRPrLoiR6jgdCZwbUpLLp4Bt1] in [users]: duplicate key value violates unique constraint "users_email_key"
+  ❌ Row upsert failed for ID [0MUcgFuhSPSJdIiImqxL5FtzHpZ2] in [users]: duplicate key value violates unique constraint "users_email_key"
+Finished migrating [users]: Successfully copied 4/14 records. (Failed/Skipped: 10)
+
+>>> Migrating [categories]...
+Found 0 documents in Firestore [categories] collection.
+  Collection [categories] is empty. Skipping.
+
+>>> Migrating [products]...
+Found 1334 documents in Firestore [products] collection.
+  Upserting batch 1 (100 records) to [products]...
+  Upserting batch 2 (100 records) to [products]...
+  Upserting batch 3 (100 records) to [products]...
+  Upserting batch 4 (100 records) to [products]...
+  Upserting batch 5 (100 records) to [products]...
+  Upserting batch 6 (100 records) to [products]...
+  Upserting batch 7 (100 records) to [products]...
+  Upserting batch 8 (100 records) to [products]...
+  Upserting batch 9 (100 records) to [products]...
+  Upserting batch 10 (100 records) to [products]...
+  Upserting batch 11 (100 records) to [products]...
+  Upserting batch 12 (100 records) to [products]...
+  Upserting batch 13 (100 records) to [products]...
+  Upserting batch 14 (34 records) to [products]...
+Finished migrating [products]: Successfully copied 1334/1334 records. (Failed/Skipped: 0)
+
+>>> Migrating [reseller_profiles]...
+Found 8 documents in Firestore [reseller_profiles] collection.
+  Upserting batch 1 (8 records) to [reseller_profiles]...
+  ⚠️ Batch upsert for 8 records in [reseller_profiles] failed: duplicate key value violates unique constraint "reseller_profiles_reseller_id_key". Retrying row-by-row...
+  ❌ Row upsert failed for ID [j5ijXOor8Dflgsj7aZZfkajEbGR2] in [reseller_profiles]: duplicate key value violates unique constraint "reseller_profiles_reseller_id_key"
+  ❌ Row upsert failed for ID [kHLXGc6T1OShFEF2PXamCWj3mSW2] in [reseller_profiles]: duplicate key value violates unique constraint "reseller_profiles_reseller_id_key"
+  ❌ Row upsert failed for ID [1LcObVZWcVNdT9x8yWaeETmbbbv1] in [reseller_profiles]: duplicate key value violates unique constraint "reseller_profiles_reseller_id_key"
+  ❌ Row upsert failed for ID [RyYKRPrLoiR6jgdCZwbUpLLp4Bt1] in [reseller_profiles]: duplicate key value violates unique constraint "reseller_profiles_reseller_id_key"
+Finished migrating [reseller_profiles]: Successfully copied 4/8 records. (Failed/Skipped: 4)
+
+>>> Migrating [retail_shops]...
+Found 8 documents in Firestore [retail_shops] collection.
+  Upserting batch 1 (8 records) to [retail_shops]...
+  ⚠️ Batch upsert for 8 records in [retail_shops] failed: insert or update on table "retail_shops" violates foreign key constraint "retail_shops_id_fkey". Retrying row-by-row...
+  ❌ Row upsert failed for ID [j5ijXOor8Dflgsj7aZZfkajEbGR2] in [retail_shops]: insert or update on table "retail_shops" violates foreign key constraint "retail_shops_id_fkey"
+  ❌ Row upsert failed for ID [kHLXGc6T1OShFEF2PXamCWj3mSW2] in [retail_shops]: insert or update on table "retail_shops" violates foreign key constraint "retail_shops_id_fkey"
+  ❌ Row upsert failed for ID [1LcObVZWcVNdT9x8yWaeETmbbbv1] in [retail_shops]: insert or update on table "retail_shops" violates foreign key constraint "retail_shops_id_fkey"
+  ❌ Row upsert failed for ID [RyYKRPrLoiR6jgdCZwbUpLLp4Bt1] in [retail_shops]: insert or update on table "retail_shops" violates foreign key constraint "retail_shops_id_fkey"
+Finished migrating [retail_shops]: Successfully copied 4/8 records. (Failed/Skipped: 4)
+
+>>> Migrating [sla_admins]...
+Found 2 documents in Firestore [sla_admins] collection.
+  Upserting batch 1 (2 records) to [sla_admins]...
+Finished migrating [sla_admins]: Successfully copied 2/2 records. (Failed/Skipped: 0)
+
+>>> Migrating [sla_staff]...
+Found 2 documents in Firestore [sla_staff] collection.
+  Upserting batch 1 (2 records) to [sla_staff]...
+Finished migrating [sla_staff]: Successfully copied 2/2 records. (Failed/Skipped: 0)
+
+>>> Migrating [system_settings]...
+Found 2 documents in Firestore [system_settings] collection.
+  Upserting batch 1 (2 records) to [system_settings]...
+Finished migrating [system_settings]: Successfully copied 2/2 records. (Failed/Skipped: 0)
+
+>>> Migrating [orders]...
+Found 45 documents in Firestore [orders] collection.
+  Upserting batch 1 (45 records) to [orders]...
+  ⚠️ Batch upsert for 45 records in [orders] failed: insert or update on table "orders" violates foreign key constraint "orders_user_id_fkey". Retrying row-by-row...
+  ❌ Row upsert failed for ID [xMz69oPiqqJpRgx6Y2sI] in [orders]: insert or update on table "orders" violates foreign key constraint "orders_user_id_fkey"
+  ❌ Row upsert failed for ID [xxdCTfVXKdSFDI5L0Qyr] in [orders]: insert or update on table "orders" violates foreign key constraint "orders_user_id_fkey"
+  ❌ Row upsert failed for ID [ISTVxeGWvUiQkuWJVLRT] in [orders]: insert or update on table "orders" violates foreign key constraint "orders_user_id_fkey"
+  ❌ Row upsert failed for ID [E94bx65kloguWDewXw2V] in [orders]: insert or update on table "orders" violates foreign key constraint "orders_user_id_fkey"
+  ❌ Row upsert failed for ID [wQYfB5uUFISaoH1f1NWa] in [orders]: insert or update on table "orders" violates foreign key constraint "orders_reseller_uid_fkey"
+  ❌ Row upsert failed for ID [Yji8tLQy7aGfxGqMnvqH] in [orders]: insert or update on table "orders" violates foreign key constraint "orders_user_id_fkey"
+  ❌ Row upsert failed for ID [OvMHsQll4DuwIG8RnOLv] in [orders]: insert or update on table "orders" violates foreign key constraint "orders_user_id_fkey"
+  ❌ Row upsert failed for ID [BkfnLihCnA0EMH8Vc4TJ] in [orders]: insert or update on table "orders" violates foreign key constraint "orders_user_id_fkey"
+  ❌ Row upsert failed for ID [XcpksLhlhQBfeQFKo1RW] in [orders]: insert or update on table "orders" violates foreign key constraint "orders_user_id_fkey"
+  ❌ Row upsert failed for ID [aCRCLPUcYMFvM6S1AW1d] in [orders]: insert or update on table "orders" violates foreign key constraint "orders_user_id_fkey"
+  ❌ Row upsert failed for ID [txI0hYc6At6s6WYt6Det] in [orders]: insert or update on table "orders" violates foreign key constraint "orders_user_id_fkey"
+  ❌ Row upsert failed for ID [d8vQx8cjGwz1TSsdcAOa] in [orders]: insert or update on table "orders" violates foreign key constraint "orders_user_id_fkey"
+  ❌ Row upsert failed for ID [HblL8QaNjxWBmwvDqsXW] in [orders]: insert or update on table "orders" violates foreign key constraint "orders_user_id_fkey"
+  ❌ Row upsert failed for ID [mO3UwYW6r4mPBidgOifB] in [orders]: insert or update on table "orders" violates foreign key constraint "orders_user_id_fkey"
+  ❌ Row upsert failed for ID [qy4uQ0u88pF1ifzfRHoa] in [orders]: insert or update on table "orders" violates foreign key constraint "orders_user_id_fkey"
+  ❌ Row upsert failed for ID [r3x6D5HVF4xekEbEhvtP] in [orders]: insert or update on table "orders" violates foreign key constraint "orders_reseller_uid_fkey"
+  ❌ Row upsert failed for ID [8HrGJUCFzDs5SQihWdcS] in [orders]: insert or update on table "orders" violates foreign key constraint "orders_user_id_fkey"
+  ❌ Row upsert failed for ID [awKcpCC8XEGNEbBfLSH1] in [orders]: insert or update on table "orders" violates foreign key constraint "orders_reseller_uid_fkey"
+  ❌ Row upsert failed for ID [weA6mvtZu6eMILUV54Rz] in [orders]: insert or update on table "orders" violates foreign key constraint "orders_reseller_uid_fkey"
+  ❌ Row upsert failed for ID [enWubqJS8zsnhIsk37lN] in [orders]: insert or update on table "orders" violates foreign key constraint "orders_user_id_fkey"
+  ❌ Row upsert failed for ID [PkfJ7P3GE9QmEg0BQWc6] in [orders]: insert or update on table "orders" violates foreign key constraint "orders_user_id_fkey"
+  ❌ Row upsert failed for ID [KzQWoSLAc6ASnhqukXvL] in [orders]: insert or update on table "orders" violates foreign key constraint "orders_user_id_fkey"
+  ❌ Row upsert failed for ID [6Kl6VEuGXvb06vPd6Axn] in [orders]: insert or update on table "orders" violates foreign key constraint "orders_reseller_uid_fkey"
+  ❌ Row upsert failed for ID [gg2sDisTiHruM7Mkadsl] in [orders]: insert or update on table "orders" violates foreign key constraint "orders_user_id_fkey"
+  ❌ Row upsert failed for ID [rCjBEDZfV7zufDLQEjXj] in [orders]: insert or update on table "orders" violates foreign key constraint "orders_user_id_fkey"
+  ❌ Row upsert failed for ID [YPWlHqEytCYL3PQJXsHw] in [orders]: insert or update on table "orders" violates foreign key constraint "orders_user_id_fkey"
+  ❌ Row upsert failed for ID [lVkXDabNWDXjU2Kvht1E] in [orders]: insert or update on table "orders" violates foreign key constraint "orders_user_id_fkey"
+  ❌ Row upsert failed for ID [a4rVu0doM7SzeSrleF82] in [orders]: insert or update on table "orders" violates foreign key constraint "orders_user_id_fkey"
+  ❌ Row upsert failed for ID [5mCtqlY0oJB6QJCKbds5] in [orders]: insert or update on table "orders" violates foreign key constraint "orders_user_id_fkey"
+  ❌ Row upsert failed for ID [KphYta98uKZxaF0wDvEk] in [orders]: insert or update on table "orders" violates foreign key constraint "orders_user_id_fkey"
+  ❌ Row upsert failed for ID [7VmlcTaadINvrmW7Twyp] in [orders]: insert or update on table "orders" violates foreign key constraint "orders_user_id_fkey"
+  ❌ Row upsert failed for ID [xI5smPF7fWk8ykzirdft] in [orders]: insert or update on table "orders" violates foreign key constraint "orders_user_id_fkey"
+  ❌ Row upsert failed for ID [IjkOPfwKiHv6i0cPvpHL] in [orders]: insert or update on table "orders" violates foreign key constraint "orders_user_id_fkey"
+  ❌ Row upsert failed for ID [tAb2zAHA1qDl1seTMIhj] in [orders]: insert or update on table "orders" violates foreign key constraint "orders_reseller_uid_fkey"
+  ❌ Row upsert failed for ID [PMzUy5dmXJIBMvEHxsA3] in [orders]: insert or update on table "orders" violates foreign key constraint "orders_user_id_fkey"
+  ❌ Row upsert failed for ID [3fnkR0qBigErm0BV9f38] in [orders]: insert or update on table "orders" violates foreign key constraint "orders_user_id_fkey"
+  ❌ Row upsert failed for ID [rzXECwfklgUpljfQ5CQ9] in [orders]: insert or update on table "orders" violates foreign key constraint "orders_user_id_fkey"
+  ❌ Row upsert failed for ID [yYjSSw0bLkQ74GQhgdwi] in [orders]: insert or update on table "orders" violates foreign key constraint "orders_user_id_fkey"
+  ❌ Row upsert failed for ID [AsgxkBcVAC9o32OjfDvd] in [orders]: insert or update on table "orders" violates foreign key constraint "orders_user_id_fkey"
+  ❌ Row upsert failed for ID [N2FeIATIT6DUoczUNotW] in [orders]: insert or update on table "orders" violates foreign key constraint "orders_user_id_fkey"
+  ❌ Row upsert failed for ID [ABYjAKpc6Q8kr4JItOFK] in [orders]: insert or update on table "orders" violates foreign key constraint "orders_user_id_fkey"
+  ❌ Row upsert failed for ID [FgsEKoEfby9TYWpDxvU4] in [orders]: insert or update on table "orders" violates foreign key constraint "orders_user_id_fkey"
+  ❌ Row upsert failed for ID [aMyJ3QDBvfpX4I6xUNIo] in [orders]: insert or update on table "orders" violates foreign key constraint "orders_user_id_fkey"
+  ❌ Row upsert failed for ID [WKWzpW1hMaV27J21Yqiw] in [orders]: insert or update on table "orders" violates foreign key constraint "orders_reseller_uid_fkey"
+Finished migrating [orders]: Successfully copied 1/45 records. (Failed/Skipped: 44)
+
+>>> Migrating [deposit_requests]...
+Found 4 documents in Firestore [deposit_requests] collection.
+  Upserting batch 1 (4 records) to [deposit_requests]...
+Finished migrating [deposit_requests]: Successfully copied 4/4 records. (Failed/Skipped: 0)
+
+>>> Migrating [withdrawal_requests]...
+Found 2 documents in Firestore [withdrawal_requests] collection.
+  Upserting batch 1 (2 records) to [withdrawal_requests]...
+Finished migrating [withdrawal_requests]: Successfully copied 2/2 records. (Failed/Skipped: 0)
+
+>>> Migrating [support_sessions]...
+Found 3 documents in Firestore [support_sessions] collection.
+  Upserting batch 1 (3 records) to [support_sessions]...
+Finished migrating [support_sessions]: Successfully copied 3/3 records. (Failed/Skipped: 0)
+
+>>> Migrating [support_messages]...
+Found 3 documents in Firestore [support_messages] collection.
+  Upserting batch 1 (3 records) to [support_messages]...
+Finished migrating [support_messages]: Successfully copied 3/3 records. (Failed/Skipped: 0)
+
+>>> Migrating [reseller_chat_sessions]...
+Found 8 documents in Firestore [reseller_chat_sessions] collection.
+  Upserting batch 1 (8 records) to [reseller_chat_sessions]...
+Finished migrating [reseller_chat_sessions]: Successfully copied 8/8 records. (Failed/Skipped: 0)
+
+>>> Migrating [reseller_chat_messages]...
+Found 121 documents in Firestore [reseller_chat_messages] collection.
+  Upserting batch 1 (100 records) to [reseller_chat_messages]...
+  Upserting batch 2 (21 records) to [reseller_chat_messages]...
+Finished migrating [reseller_chat_messages]: Successfully copied 121/121 records. (Failed/Skipped: 0)
+
+>>> Migrating [reseller_customer_chat_sessions]...
+Found 11 documents in Firestore [reseller_customer_chat_sessions] collection.
+  Upserting batch 1 (11 records) to [reseller_customer_chat_sessions]...
+Finished migrating [reseller_customer_chat_sessions]: Successfully copied 11/11 records. (Failed/Skipped: 0)
+
+>>> Migrating [reseller_customer_chat_messages]...
+Found 35 documents in Firestore [reseller_customer_chat_messages] collection.
+  Upserting batch 1 (35 records) to [reseller_customer_chat_messages]...
+Finished migrating [reseller_customer_chat_messages]: Successfully copied 35/35 records. (Failed/Skipped: 0)
+
+>>> Migrating [reseller_product_selection]...
+Found 191 documents in Firestore [reseller_product_selection] collection.
+  Upserting batch 1 (100 records) to [reseller_product_selection]...
+  ⚠️ Batch upsert for 100 records in [reseller_product_selection] failed: insert or update on table "reseller_product_selection" violates foreign key constraint "reseller_product_selection_product_id_fkey". Retrying row-by-row...
+  ❌ Row upsert failed for ID [rjqqA18WZvNHkwwB0gkQIPb2CEL2_D2Y9TWN0IXLRxWbI3kiU] in [reseller_product_selection]: insert or update on table "reseller_product_selection" violates foreign key constraint "reseller_product_selection_product_id_fkey"
+  ❌ Row upsert failed for ID [rjqqA18WZvNHkwwB0gkQIPb2CEL2_uNV1wKGbr9DlihT4eqVD] in [reseller_product_selection]: insert or update on table "reseller_product_selection" violates foreign key constraint "reseller_product_selection_product_id_fkey"
+  ❌ Row upsert failed for ID [rjqqA18WZvNHkwwB0gkQIPb2CEL2_tOveVm9AQrldhr3BMySO] in [reseller_product_selection]: insert or update on table "reseller_product_selection" violates foreign key constraint "reseller_product_selection_product_id_fkey"
+  ❌ Row upsert failed for ID [rjqqA18WZvNHkwwB0gkQIPb2CEL2_g5bJRaDUvJO20M06wgYv] in [reseller_product_selection]: insert or update on table "reseller_product_selection" violates foreign key constraint "reseller_product_selection_product_id_fkey"
+  ❌ Row upsert failed for ID [rjqqA18WZvNHkwwB0gkQIPb2CEL2_ubcz0PgfENFvbtMEVbbi] in [reseller_product_selection]: insert or update on table "reseller_product_selection" violates foreign key constraint "reseller_product_selection_product_id_fkey"
+  Upserting batch 2 (91 records) to [reseller_product_selection]...
+  ⚠️ Batch upsert for 91 records in [reseller_product_selection] failed: insert or update on table "reseller_product_selection" violates foreign key constraint "reseller_product_selection_product_id_fkey". Retrying row-by-row...
+  ❌ Row upsert failed for ID [rjqqA18WZvNHkwwB0gkQIPb2CEL2_hWMWHTbwuEnSM2gYwKWU] in [reseller_product_selection]: insert or update on table "reseller_product_selection" violates foreign key constraint "reseller_product_selection_product_id_fkey"
+  ❌ Row upsert failed for ID [rjqqA18WZvNHkwwB0gkQIPb2CEL2_6CqUzAEcvic4yevG0XS6] in [reseller_product_selection]: insert or update on table "reseller_product_selection" violates foreign key constraint "reseller_product_selection_product_id_fkey"
+  ❌ Row upsert failed for ID [rjqqA18WZvNHkwwB0gkQIPb2CEL2_vmxuj0Fl0ZM2xPsvo3Ps] in [reseller_product_selection]: insert or update on table "reseller_product_selection" violates foreign key constraint "reseller_product_selection_product_id_fkey"
+  ❌ Row upsert failed for ID [rjqqA18WZvNHkwwB0gkQIPb2CEL2_at5MERVut3Mor0UXEsdN] in [reseller_product_selection]: insert or update on table "reseller_product_selection" violates foreign key constraint "reseller_product_selection_product_id_fkey"
+  ❌ Row upsert failed for ID [rjqqA18WZvNHkwwB0gkQIPb2CEL2_CxMybqh01lwJCC3RC0D6] in [reseller_product_selection]: insert or update on table "reseller_product_selection" violates foreign key constraint "reseller_product_selection_product_id_fkey"
+  ❌ Row upsert failed for ID [rjqqA18WZvNHkwwB0gkQIPb2CEL2_gznryfVAcPE5lEoZj42N] in [reseller_product_selection]: insert or update on table "reseller_product_selection" violates foreign key constraint "reseller_product_selection_product_id_fkey"
+  ❌ Row upsert failed for ID [rjqqA18WZvNHkwwB0gkQIPb2CEL2_JcmU7N19jsgapMsOsxoa] in [reseller_product_selection]: insert or update on table "reseller_product_selection" violates foreign key constraint "reseller_product_selection_product_id_fkey"
+  ❌ Row upsert failed for ID [rjqqA18WZvNHkwwB0gkQIPb2CEL2_2LjwBx6IiNw4srZloDNK] in [reseller_product_selection]: insert or update on table "reseller_product_selection" violates foreign key constraint "reseller_product_selection_product_id_fkey"
+  ❌ Row upsert failed for ID [rjqqA18WZvNHkwwB0gkQIPb2CEL2_L1fujS771rjyyNucpNKl] in [reseller_product_selection]: insert or update on table "reseller_product_selection" violates foreign key constraint "reseller_product_selection_product_id_fkey"
+Finished migrating [reseller_product_selection]: Successfully copied 177/191 records. (Failed/Skipped: 14)
+
+>>> Migrating [ach_customers]...
+Found 0 documents in Firestore [ach_customers] collection.
+  Collection [ach_customers] is empty. Skipping.
+
+>>> Migrating [ach_financials]...
+Found 0 documents in Firestore [ach_financials] collection.
+  Collection [ach_financials] is empty. Skipping.
+
+>>> Migrating [virtual_customer_profiles]...
+Found 0 documents in Firestore [virtual_customer_profiles] collection.
+  Collection [virtual_customer_profiles] is empty. Skipping.
+
+>>> Migrating [virtual_profiles]...
+Found 0 documents in Firestore [virtual_profiles] collection.
+  Collection [virtual_profiles] is empty. Skipping.
+
+>>> Migrating [seasonal_themes]...
+Found 0 documents in Firestore [seasonal_themes] collection.
+  Collection [seasonal_themes] is empty. Skipping.
+
+========================================================
+          MIGRATION COMPLETED SUCCESSFULLY
+========================================================
+

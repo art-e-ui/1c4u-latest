@@ -1,0 +1,10 @@
+[{
+  "relation": ["delegate_permission/common.handle_all_urls"],
+  "target": {
+    "namespace": "android_app",
+    "package_name": "com.app_1_cartforu.reseller.twa",
+    "sha256_cert_fingerprints": [
+      "4A:58:43:97:FF:F6:04:DD:6B:CB:C2:C9:FC:D5:14:4C:E3:5E:43:2C:CE:28:42:69:56:F5:74:7A:BE:1A:8A:8A"
+    ]
+  }
+}]

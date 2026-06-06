@@ -1,0 +1,47 @@
+[dotenv@17.3.1] injecting env (0) from .env -- tip: 🔐 encrypt with Dotenvx: https://dotenvx.com
+Found service-account.json! Initializing Firestore Admin SDK with service account...
+Connecting to Firestore database [ai-studio-60fdf148-b609-4c68-97a8-d9fe9841d742]...
+
+========================================================
+            STARTING BATCH-MAPPED DATABASE MIGRATION
+========================================================
+
+Preloading lookup registries...
+(node:5156) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+FATAL: Migration runner failed completely: Error: 8 RESOURCE_EXHAUSTED: Quota limit exceeded. Retry after quota limits are reset or enable billing for this project to avoid quota checks. Cause - Quota exceeded for quota metric 'Free daily read units per project (free tier database)' and limit 'Free daily read units per project (free tier database) per day' of service 'firestore.googleapis.com' for consumer 'project_number:518258779291'. This database cannot exceed free quota limits even when a billing instrument is enabled.
+    at callErrorFromStatus (/app/applet/node_modules/google-gax/node_modules/@grpc/grpc-js/src/call.ts:84:17)
+    at Object.onReceiveStatus (/app/applet/node_modules/google-gax/node_modules/@grpc/grpc-js/src/client.ts:612:51)
+    at Object.onReceiveStatus (/app/applet/node_modules/google-gax/node_modules/@grpc/grpc-js/src/client-interceptors.ts:424:48)
+    at <anonymous> (/app/applet/node_modules/google-gax/node_modules/@grpc/grpc-js/src/resolving-call.ts:170:24)
+    at process.processTicksAndRejections (node:internal/process/task_queues:84:11)
+for call at
+    at ServiceClientImpl.makeServerStreamRequest (/app/applet/node_modules/google-gax/node_modules/@grpc/grpc-js/src/client.ts:595:42)
+    at ServiceClientImpl.<anonymous> (/app/applet/node_modules/google-gax/node_modules/@grpc/grpc-js/src/make-client.ts:189:15)
+    at /app/applet/node_modules/@google-cloud/firestore/build/src/v1/firestore_client.js:242:33
+    at <anonymous> (/app/applet/node_modules/google-gax/src/streamingCalls/streamingApiCaller.ts:59:19)
+    at <anonymous> (/app/applet/node_modules/google-gax/src/normalCalls/timeout.ts:54:13)
+    at Object.request (/app/applet/node_modules/google-gax/src/streamingCalls/streaming.ts:331:28)
+    at makeRequest (/app/applet/node_modules/retry-request/index.js:159:28)
+    at retryRequest (/app/applet/node_modules/retry-request/index.js:119:5)
+    at StreamProxy.setStream (/app/applet/node_modules/google-gax/src/streamingCalls/streaming.ts:322:29)
+    at StreamingApiCaller.call (/app/applet/node_modules/google-gax/src/streamingCalls/streamingApiCaller.ts:89:12)
+Caused by: Error
+    at QueryUtil._getResponse (/app/applet/node_modules/@google-cloud/firestore/build/src/reference/query-util.js:44:23)
+    at CollectionReference._getResponse (/app/applet/node_modules/@google-cloud/firestore/build/src/reference/query.js:784:32)
+    at CollectionReference._get (/app/applet/node_modules/@google-cloud/firestore/build/src/reference/query.js:777:35)
+    at /app/applet/node_modules/@google-cloud/firestore/build/src/reference/query.js:745:43
+    at /app/applet/node_modules/@google-cloud/firestore/build/src/telemetry/enabled-trace-util.js:110:30
+    at NoopContextManager.with (/app/applet/node_modules/@opentelemetry/api/src/context/NoopContextManager.ts:20:15)
+    at ContextAPI.with (/app/applet/node_modules/@opentelemetry/api/src/api/context.ts:68:42)
+    at NoopTracer.startActiveSpan (/app/applet/node_modules/@opentelemetry/api/src/trace/NoopTracer.ts:87:27)
+    at ProxyTracer.startActiveSpan (/app/applet/node_modules/@opentelemetry/api/src/trace/ProxyTracer.ts:51:20)
+    at EnabledTraceUtil.startActiveSpan (/app/applet/node_modules/@google-cloud/firestore/build/src/telemetry/enabled-trace-util.js:102:28) {
+  code: 8,
+  details: "Quota limit exceeded. Retry after quota limits are reset or enable billing for this project to avoid quota checks. Cause - Quota exceeded for quota metric 'Free daily read units per project (free tier database)' and limit 'Free daily read units per project (free tier database) per day' of service 'firestore.googleapis.com' for consumer 'project_number:518258779291'. This database cannot exceed free quota limits even when a billing instrument is enabled.",
+  metadata: Metadata {
+    internalRepr: Map(1) { 'x-debug-tracking-id' => [Array] },
+    opaqueData: Map(0) {},
+    options: {}
+  }
+}

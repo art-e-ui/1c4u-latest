@@ -1,0 +1,206 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner() {
+      return isAuthenticated() && 
+        request.auth.token.email.lower() == "arkarnaung009@gmail.com";
+    }
+
+    function isAdmin() {
+      return isOwner() || (
+        isAuthenticated() && 
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('role', '').lower() in ['admin', 'owner']
+      );
+    }
+
+    function isStaff() {
+      return isAdmin() || (
+        isAuthenticated() && 
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('role', '').lower() == 'staff'
+      );
+    }
+
+    function isReseller() {
+      return isAuthenticated() && 
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('role', '') == 'reseller';
+    }
+
+    function isDocOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    match /users/{userId} {
+      allow read: if true;
+      allow create: if isDocOwner(userId);
+      allow update: if isDocOwner(userId) || isStaff();
+    }
+
+    match /products/{id} {
+      allow read: if true;
+      allow write: if isStaff();
+    }
+
+    match /categories/{id} {
+      allow read: if true;
+      allow write: if isStaff();
+    }
+
+    match /footer_links/{id} {
+      allow read: if true;
+      allow write: if isStaff();
+    }
+
+    match /orders/{orderId} {
+      allow read: if true;
+      allow create: if isAuthenticated() && (
+        request.resource.data.user_id == request.auth.uid ||
+        isStaff()
+      );
+      allow update: if isStaff() || (
+        isAuthenticated() && 
+        resource != null && 
+        (resource.data.user_id == request.auth.uid || resource.data.reseller_id == request.auth.uid || resource.data.resellerId == request.auth.uid)
+      );
+      allow delete: if isStaff();
+      
+      match /order_items/{itemId} {
+        allow read: if isAuthenticated() && (
+          get(/databases/$(database)/documents/orders/$(orderId)).data.user_id == request.auth.uid ||
+          get(/databases/$(database)/documents/orders/$(orderId)).data.reseller_id == request.auth.uid ||
+          isStaff()
+        );
+        allow write: if isAuthenticated() && (
+          !exists(/databases/$(database)/documents/orders/$(orderId)) ||
+          get(/databases/$(database)/documents/orders/$(orderId)).data.user_id == request.auth.uid ||
+          isStaff()
+        );
+      }
+    }
+
+    match /reseller_profiles/{userId} {
+      allow read: if true;
+      allow write: if isDocOwner(userId) || isStaff();
+    }
+
+    match /reseller_product_selection/{selectionId} {
+      allow read: if true;
+      allow create: if isAuthenticated() && (request.resource.data.reseller_id == request.auth.uid || isStaff());
+      allow update: if isAuthenticated() && (resource.data.reseller_id == request.auth.uid || isStaff());
+      allow delete: if isAuthenticated() && (resource.data.reseller_id == request.auth.uid || isStaff());
+    }
+
+    match /retail_shops/{userId} {
+      allow read: if true;
+      allow write: if isDocOwner(userId) || isStaff();
+    }
+
+    match /deposit_requests/{id} {
+      allow read: if true;
+      allow create: if isAuthenticated() && request.resource.data.resellerDocId == request.auth.uid;
+      allow update: if isStaff();
+    }
+    match /withdrawal_requests/{id} {
+      allow read: if true;
+      allow create: if isAuthenticated() && request.resource.data.resellerDocId == request.auth.uid;
+      allow update: if isStaff();
+    }
+
+    match /reseller_chat_sessions/{id} {
+      allow read: if isStaff() || (isAuthenticated() && resource != null && resource.data.reseller_id == request.auth.uid);
+      allow create: if isStaff() || (isAuthenticated() && request.resource.data.reseller_id == request.auth.uid);
+      allow update: if isStaff() || (isAuthenticated() && resource.data.reseller_id == request.auth.uid);
+      allow delete: if isStaff();
+    }
+    match /reseller_chat_messages/{id} {
+      allow read: if true;
+      allow create: if isAuthenticated();
+      allow update: if isStaff() || (isAuthenticated() && resource.data.senderId == request.auth.uid);
+      allow delete: if isStaff();
+    }
+    match /reseller_customer_chat_sessions/{id} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated();
+      allow update: if isAuthenticated();
+      allow delete: if isStaff();
+    }
+    match /reseller_customer_chat_messages/{id} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated();
+      allow update: if isStaff() || (isAuthenticated() && resource.data.senderId == request.auth.uid);
+      allow delete: if isStaff();
+    }
+
+    match /support_sessions/{id} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated();
+      allow update: if isAuthenticated();
+      allow delete: if isStaff();
+    }
+    match /support_messages/{id} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated();
+      allow update: if isAuthenticated();
+      allow delete: if isStaff();
+    }
+
+    match /system_settings/{id} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /reviews/{id} {
+      allow read: if true;
+      allow create: if isAuthenticated() && request.resource.data.user_id == request.auth.uid;
+      allow update, delete: if isAdmin() || (isAuthenticated() && resource != null && resource.data.user_id == request.auth.uid);
+    }
+
+    match /broadcast_notifications/{id} {
+      allow read: if true;
+      allow write: if isStaff();
+    }
+
+    match /reseller_notifications/{id} {
+      allow read: if isAuthenticated() && (resource.data.reseller_id == request.auth.uid || isStaff());
+      allow write: if isStaff();
+    }
+
+    match /sla_admins/{id} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    match /sla_staff/{id} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /_connection_test_/{docId} {
+      allow read: if true;
+      allow write: if true;
+    }
+    match /testing_collection/{docId} {
+      allow read: if true;
+    }
+    
+    match /products/{docId} {
+      allow read: if true;
+      allow write: if isStaff();
+    }
+    match /categories/{docId} {
+      allow read: if true;
+      allow write: if isStaff();
+    }
+    
+    match /{document=**} {
+      allow read: if isAuthenticated();
+      allow write: if isStaff();
+    }
+  }
+}
+

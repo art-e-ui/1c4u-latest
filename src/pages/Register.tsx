@@ -1,0 +1,161 @@
+import { useState } from "react";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import { useCustomerAuth } from "@/lib/customer-auth-context-hooks";
+import { resellerPath } from "@/lib/subdomain";
+import { Eye, EyeOff, Headset } from "lucide-react";
+const loginIllustration = "/images/loginbg.png";
+import LogoFull from "@/components/brand/LogoFull";
+
+export default function Register() {
+  const { t } = useTranslation();
+  const { register } = useCustomerAuth();
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const [name, setName] = useState("");
+  const [emailOrPhone, setEmailOrPhone] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  const referralCode = searchParams.get('ref');
+
+  const isEmail = (v: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
+  const isPhone = (v: string) => /^\+?[\d\s\-()]{7,15}$/.test(v);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+    if (!name.trim()) { setError(t("common.fullNameRequired")); return; }
+    if (!emailOrPhone.trim()) { setError(t("common.emailOrPhoneRequired")); return; }
+    if (!isEmail(emailOrPhone) && !isPhone(emailOrPhone)) {
+      setError(t("common.invalidEmailOrPhone")); return;
+    }
+    if (password.length < 6) { setError(t("common.passwordMinLength")); return; }
+    if (password !== confirmPassword) { setError(t("common.passwordsDoNotMatch")); return; }
+
+    setLoading(true);
+    const result = await register(name.trim(), emailOrPhone.trim(), password);
+    setLoading(false);
+    if (result.success) navigate("/account");
+    else setError(result.message || t("common.registrationFailed"));
+  };
+
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-muted/30 p-4">
+      <div className="w-full max-w-5xl grid md:grid-cols-2 items-center gap-8 md:gap-12">
+        {/* Illustration side */}
+        <div className="hidden md:flex items-center justify-center">
+          <img
+            src={loginIllustration}
+            alt="Shopping illustration"
+            className="w-full max-w-md object-contain"
+          />
+        </div>
+
+        {/* Register form card */}
+        <div className="w-full max-w-sm mx-auto md:mx-0 md:ml-auto">
+          <div className="rounded-2xl bg-background shadow-xl p-8 space-y-6 relative">
+            <button type="button" className="absolute top-4 right-4 text-muted-foreground hover:text-primary transition-colors" title={t("common.customerSupport")}>
+              <Headset className="h-5 w-5" />
+            </button>
+            <div className="flex items-center justify-center py-2 mb-2">
+              <LogoFull size="sm" align="center" />
+            </div>
+
+            <form onSubmit={handleSubmit} className="space-y-5">
+              {error && <p className="text-xs text-destructive text-center">{error}</p>}
+
+              <div>
+                <label className="text-xs text-muted-foreground">{t("common.fullName")}</label>
+                <input
+                  type="text"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  className="mt-1 w-full border-b border-border bg-transparent px-1 py-2.5 text-sm text-brand-green placeholder:text-muted-foreground focus:outline-none focus:border-primary transition-colors"
+                  placeholder="John Doe"
+                  maxLength={100}
+                />
+              </div>
+
+              <div>
+                <label className="text-xs text-muted-foreground">{t("common.emailOrPhone")}</label>
+                <input
+                  type="text"
+                  value={emailOrPhone}
+                  onChange={(e) => setEmailOrPhone(e.target.value)}
+                  className="mt-1 w-full border-b border-border bg-transparent px-1 py-2.5 text-sm text-brand-green placeholder:text-muted-foreground focus:outline-none focus:border-primary transition-colors"
+                  placeholder="you@example.com or +1234567890"
+                  maxLength={255}
+                />
+              </div>
+
+              <div>
+                <label className="text-xs text-muted-foreground">{t("common.password")}</label>
+                <div className="relative mt-1">
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="w-full border-b border-border bg-transparent px-1 py-2.5 pr-10 text-sm text-brand-green placeholder:text-muted-foreground focus:outline-none focus:border-primary transition-colors"
+                    placeholder="••••••••"
+                  />
+                  <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-1 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                </div>
+              </div>
+
+              <div>
+                <label className="text-xs text-muted-foreground">{t("common.confirmPassword")}</label>
+                <div className="relative mt-1">
+                  <input
+                    type={showConfirm ? "text" : "password"}
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    className="w-full border-b border-border bg-transparent px-1 py-2.5 pr-10 text-sm text-brand-green placeholder:text-muted-foreground focus:outline-none focus:border-primary transition-colors"
+                    placeholder="••••••••"
+                  />
+                  <button type="button" onClick={() => setShowConfirm(!showConfirm)} className="absolute right-1 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+                    {showConfirm ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full rounded-lg bg-foreground py-3 text-sm font-bold uppercase text-background hover:bg-foreground/90 transition-colors disabled:opacity-50 tracking-wider"
+              >
+                {loading ? t("common.creatingAccount") : t("common.register")}
+              </button>
+            </form>
+
+            <div className="space-y-1 text-sm">
+              <p className="text-muted-foreground">
+                {t("common.alreadyHaveAccount")}{" "}
+                <Link to="/cart/login" className="font-medium text-primary hover:underline">{t("common.login")}</Link>
+              </p>
+              <p className="text-muted-foreground">
+                {t("common.registerAsReseller")}{" "}
+                <Link 
+                  to={referralCode ? `${resellerPath("/register")}?ref=${referralCode}` : resellerPath("/register")} 
+                  className="font-medium text-brand-green hover:underline"
+                >
+                  {t("common.clickHere")}
+                </Link>
+              </p>
+            </div>
+          </div>
+
+          <p className="text-center mt-4">
+            <Link to="/" className="text-xs text-muted-foreground hover:text-foreground">← {t("common.backToSite")}</Link>
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}

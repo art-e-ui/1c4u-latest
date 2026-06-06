@@ -1,0 +1,12 @@
+{
+  "firestore": [
+    {
+      "database": "(default)",
+      "rules": "firestore.rules"
+    },
+    {
+      "database": "global-cart-prod-us",
+      "rules": "firestore.rules"
+    }
+  ]
+}

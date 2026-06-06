@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>GlobalCart Online Shop — Your Premium Shopping Destination</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="apple-touch-icon" href="/brand/icon-apple-touch.svg" />
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="theme-color" content="#009000" />
+    <meta name="description" content="The official reseller portal for GlobalCart. Manage your shop, track orders, and boost your sales." />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="GC Reseller" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <meta name="description" content="GlobalCart Online Shop — Your global shopping destination for premium products. Everything you need, delivered worldwide with trust and security.">
+    <meta name="author" content="GlobalCart Online Shop" />
+
+    
+    
+    <meta property="og:type" content="website" />
+    <meta property="og:image" content="/brand/og-logo.svg">
+
+    <meta name="twitter:card" content="summary" />
+    
+    <meta name="twitter:image" content="/brand/og-logo.svg">
+    
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  <meta property="og:title" content="GlobalCart Online Shop">
+  <meta name="twitter:title" content="GlobalCart Online Shop">
+  <meta property="og:description" content="A premium e-commerce platform for global shopping, reseller management, and business administration.">
+  <meta name="twitter:description" content="A premium e-commerce platform for global shopping, reseller management, and business administration.">
+</head>
+
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/service-worker.js', { scope: '/' })
+            .then(reg => console.log('Manual SW Register Success:', reg.scope))
+            .catch(err => console.log('Manual SW Register Fail:', err));
+        });
+      }
+    </script>
+  </body>
+</html>

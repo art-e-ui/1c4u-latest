@@ -1,0 +1,476 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "User profile data for all roles (admin, staff, reseller, customer).",
+      "type": "object",
+      "properties": {
+        "first_name": { "type": "string" },
+        "last_name": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "role": { "type": "string", "enum": ["admin", "owner", "staff", "reseller", "customer"] },
+        "created_at": { "type": "string", "format": "date-time" },
+        "phone": { "type": "string" },
+        "avatar_url": { "type": "string", "format": "uri" }
+      },
+      "required": ["email", "role"]
+    },
+    "Product": {
+      "title": "Product",
+      "description": "Product catalog items.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "price": { "type": "number" },
+        "original_price": { "type": "number" },
+        "image_url": { "type": "string", "format": "uri" },
+        "rating": { "type": "number" },
+        "category_slug": { "type": "string" },
+        "badge": { "type": "string" },
+        "description": { "type": "string" },
+        "seller": { "type": "string" },
+        "in_stock": { "type": "boolean" },
+        "stock": { "type": "integer" },
+        "sku": { "type": "string" },
+        "specifications": { "type": "object" },
+        "created_at": { "type": "string", "format": "date-time" }
+      },
+      "required": ["name", "price", "category_slug"]
+    },
+    "Category": {
+      "title": "Category",
+      "description": "Product categories.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "slug": { "type": "string" },
+        "image": { "type": "string", "format": "uri" },
+        "product_count": { "type": "integer" }
+      },
+      "required": ["name", "slug"]
+    },
+    "Review": {
+      "title": "Review",
+      "description": "Product reviews from customers.",
+      "type": "object",
+      "properties": {
+        "product_id": { "type": "string" },
+        "user_id": { "type": "string" },
+        "rating": { "type": "number" },
+        "title": { "type": "string" },
+        "content": { "type": "string" },
+        "helpful_count": { "type": "integer" },
+        "created_at": { "type": "string", "format": "date-time" }
+      },
+      "required": ["product_id", "user_id", "rating"]
+    },
+    "Order": {
+      "title": "Order",
+      "description": "Customer orders.",
+      "type": "object",
+      "properties": {
+        "user_id": { "type": "string" },
+        "total_amount": { "type": "number" },
+        "status": { "type": "string", "enum": ["pending", "processing", "shipped", "delivered", "cancelled"] },
+        "created_at": { "type": "string", "format": "date-time" },
+        "items_count": { "type": "integer" },
+        "products_count": { "type": "integer" },
+        "reseller_id": { "type": "string" },
+        "order_number": { "type": "string" }
+      },
+      "required": ["user_id", "total_amount", "status"]
+    },
+    "OrderItem": {
+      "title": "OrderItem",
+      "description": "Individual items within an order.",
+      "type": "object",
+      "properties": {
+        "product_id": { "type": "string" },
+        "name": { "type": "string" },
+        "price": { "type": "number" },
+        "quantity": { "type": "integer" },
+        "image": { "type": "string", "format": "uri" }
+      },
+      "required": ["product_id", "quantity"]
+    },
+    "RetailShop": {
+      "title": "RetailShop",
+      "description": "Retail shop data for resellers.",
+      "type": "object",
+      "properties": {
+        "reseller_id": { "type": "string" },
+        "shop_name": { "type": "string" },
+        "star_rating": { "type": "number" },
+        "credit_score": { "type": "number" },
+        "status": { "type": "string" },
+        "created_at": { "type": "string", "format": "date-time" }
+      },
+      "required": ["reseller_id", "shop_name"]
+    },
+    "SupportSession": {
+      "title": "SupportSession",
+      "description": "Customer support chat sessions.",
+      "type": "object",
+      "properties": {
+        "customer_name": { "type": "string" },
+        "is_online": { "type": "boolean" },
+        "last_message_at": { "type": "string", "format": "date-time" },
+        "user_id": { "type": "string" }
+      },
+      "required": ["customer_name", "last_message_at"]
+    },
+    "SupportMessage": {
+      "title": "SupportMessage",
+      "description": "Messages within a support chat session.",
+      "type": "object",
+      "properties": {
+        "session_id": { "type": "string" },
+        "sender": { "type": "string", "enum": ["customer", "support"] },
+        "message": { "type": "string" },
+        "attachment_product_id": { "type": "string" },
+        "is_read": { "type": "boolean" },
+        "created_at": { "type": "string", "format": "date-time" }
+      },
+      "required": ["session_id", "sender", "message", "created_at"]
+    },
+    "ResellerChatSession": {
+      "title": "ResellerChatSession",
+      "description": "Chat sessions between resellers and admins.",
+      "type": "object",
+      "properties": {
+        "reseller_id": { "type": "string" },
+        "reseller_name": { "type": "string" },
+        "reseller_avatar": { "type": "string", "format": "uri" },
+        "is_online": { "type": "boolean" },
+        "is_pinned": { "type": "boolean" },
+        "last_message_at": { "type": "string", "format": "date-time" }
+      },
+      "required": ["reseller_id", "reseller_name", "last_message_at"]
+    },
+    "ResellerChatMessage": {
+      "title": "ResellerChatMessage",
+      "description": "Messages within a reseller chat session.",
+      "type": "object",
+      "properties": {
+        "session_id": { "type": "string" },
+        "sender": { "type": "string", "enum": ["reseller", "admin"] },
+        "message": { "type": "string" },
+        "is_read": { "type": "boolean" },
+        "created_at": { "type": "string", "format": "date-time" }
+      },
+      "required": ["session_id", "sender", "message", "created_at"]
+    },
+    "ResellerCustomerChatSession": {
+      "title": "ResellerCustomerChatSession",
+      "description": "Chat sessions between resellers and virtual customers.",
+      "type": "object",
+      "properties": {
+        "reseller_id": { "type": "string" },
+        "customer_id": { "type": "string" },
+        "customer_name": { "type": "string" },
+        "last_message": { "type": "string" },
+        "last_message_at": { "type": "string", "format": "date-time" },
+        "unread_count": { "type": "integer" }
+      },
+      "required": ["reseller_id", "customer_id", "customer_name", "last_message_at"]
+    },
+    "ResellerCustomerChatMessage": {
+      "title": "ResellerCustomerChatMessage",
+      "description": "Messages within a reseller-customer chat session.",
+      "type": "object",
+      "properties": {
+        "session_id": { "type": "string" },
+        "sender": { "type": "string", "enum": ["reseller", "customer"] },
+        "message": { "type": "string" },
+        "is_read": { "type": "boolean" },
+        "created_at": { "type": "string", "format": "date-time" }
+      },
+      "required": ["session_id", "sender", "message", "created_at"]
+    },
+    "BroadcastNotification": {
+      "title": "BroadcastNotification",
+      "description": "System-wide notifications.",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "message": { "type": "string" },
+        "department": { "type": "string" },
+        "is_archived": { "type": "boolean" },
+        "created_at": { "type": "string", "format": "date-time" }
+      },
+      "required": ["title", "message", "created_at"]
+    },
+    "SlaAdmin": {
+      "title": "SlaAdmin",
+      "description": "SLA Administrator accounts.",
+      "type": "object",
+      "properties": {
+        "account_id": { "type": "string" },
+        "name": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "phone": { "type": "string" },
+        "status": { "type": "string" },
+        "avatar": { "type": "string", "format": "uri" },
+        "joined_at": { "type": "string", "format": "date-time" },
+        "last_login": { "type": "string", "format": "date-time" },
+        "permissions": { "type": "array" }
+      },
+      "required": ["account_id", "name", "email"]
+    },
+    "SlaStaff": {
+      "title": "SlaStaff",
+      "description": "SLA Staff accounts.",
+      "type": "object",
+      "properties": {
+        "staff_id": { "type": "string" },
+        "referral_id": { "type": "string" },
+        "name": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "phone": { "type": "string" },
+        "status": { "type": "string" },
+        "joined_at": { "type": "string", "format": "date-time" },
+        "last_active": { "type": "string", "format": "date-time" },
+        "created_by_admin_id": { "type": "string" },
+        "department": { "type": "string" }
+      },
+      "required": ["staff_id", "name", "email"]
+    },
+    "SystemSetting": {
+      "title": "SystemSetting",
+      "description": "Global system settings.",
+      "type": "object",
+      "properties": {
+        "key": { "type": "string" },
+        "label": { "type": "string" },
+        "value": { "type": "string" },
+        "category": { "type": "string" },
+        "updated_at_display": { "type": "string" },
+        "updated_by": { "type": "string" }
+      },
+      "required": ["key", "value"]
+    },
+    "ResellerProfile": {
+      "title": "ResellerProfile",
+      "description": "Extended profile for resellers.",
+      "type": "object",
+      "properties": {
+        "shop_name": { "type": "string" },
+        "balance": { "type": "number" },
+        "pending_balance": { "type": "number" },
+        "credit_score": { "type": "number" },
+        "status": { "type": "string" },
+        "reseller_id": { "type": "integer" },
+        "referred_by_staff_id": { "type": "string" },
+        "member_of_admin_id": { "type": "string" },
+        "registration_date": { "type": "string", "format": "date-time" },
+        "usdt_address": { "type": "string" },
+        "bank_info": {
+          "type": "object",
+          "properties": {
+            "bankName": { "type": "string" },
+            "accountName": { "type": "string" },
+            "accountNumber": { "type": "string" }
+          }
+        }
+      }
+    },
+    "ResellerProductSelection": {
+      "title": "ResellerProductSelection",
+      "description": "Products selected by resellers for their storefront.",
+      "type": "object",
+      "properties": {
+        "reseller_id": { "type": "string" },
+        "product_id": { "type": "string" },
+        "created_at": { "type": "string", "format": "date-time" }
+      }
+    },
+    "DepositRequest": {
+      "title": "DepositRequest",
+      "description": "Reseller deposit requests.",
+      "type": "object",
+      "properties": {
+        "resellerId": { "type": "string" },
+        "resellerDocId": { "type": "string" },
+        "resellerName": { "type": "string" },
+        "amount": { "type": "number" },
+        "status": { "type": "string", "enum": ["Pending", "Approved", "Rejected"] },
+        "method": { "type": "string" },
+        "proofImage": { "type": "string", "format": "uri" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "usdtAddress": { "type": "string" },
+        "referralId": { "type": "string" },
+        "memberOfAdminId": { "type": "string" },
+        "rejectRemark": { "type": "string" }
+      },
+      "required": ["resellerDocId", "amount", "status", "createdAt"]
+    },
+    "WithdrawalRequest": {
+      "title": "WithdrawalRequest",
+      "description": "Reseller withdrawal requests.",
+      "type": "object",
+      "properties": {
+        "resellerId": { "type": "string" },
+        "resellerDocId": { "type": "string" },
+        "resellerName": { "type": "string" },
+        "amount": { "type": "number" },
+        "status": { "type": "string", "enum": ["Pending", "Approved", "Rejected"] },
+        "method": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "bankInfo": { "type": "object" },
+        "usdtAddress": { "type": "string" },
+        "referralId": { "type": "string" },
+        "memberOfAdminId": { "type": "string" },
+        "rejectRemark": { "type": "string" }
+      },
+      "required": ["resellerDocId", "amount", "status", "createdAt"]
+    },
+    "SeasonalTheme": {
+      "title": "SeasonalTheme",
+      "description": "Seasonal UI themes and settings.",
+      "type": "object",
+      "properties": {
+        "theme_name": { "type": "string" },
+        "is_active": { "type": "boolean" },
+        "config": { "type": "object" }
+      },
+      "required": ["theme_name", "is_active"]
+    },
+    "AchCustomer": {
+      "title": "AchCustomer",
+      "description": "ACH customer data.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "email": { "type": "string" },
+        "account_last4": { "type": "string" }
+      }
+    },
+    "AchFinancial": {
+      "title": "AchFinancial",
+      "description": "ACH financial records.",
+      "type": "object",
+      "properties": {
+        "amount": { "type": "number" },
+        "type": { "type": "string" },
+        "timestamp": { "type": "string", "format": "date-time" }
+      }
+    },
+    "VirtualProfile": {
+      "title": "VirtualProfile",
+      "description": "Virtual customer/reseller profiles.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "email": { "type": "string" },
+        "avatar": { "type": "string" },
+        "status": { "type": "string" }
+      }
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "User profile collection."
+    },
+    "/products/{productId}": {
+      "schema": "Product",
+      "description": "Product catalog collection."
+    },
+    "/categories/{categoryId}": {
+      "schema": "Category",
+      "description": "Product categories collection."
+    },
+    "/reviews/{reviewId}": {
+      "schema": "Review",
+      "description": "Product reviews collection."
+    },
+    "/orders/{orderId}": {
+      "schema": "Order",
+      "description": "Customer orders collection."
+    },
+    "/orders/{orderId}/order_items/{itemId}": {
+      "schema": "OrderItem",
+      "description": "Subcollection of items for a specific order."
+    },
+    "/retail_shops/{userId}": {
+      "schema": "RetailShop",
+      "description": "Retail shops collection."
+    },
+    "/support_sessions/{sessionId}": {
+      "schema": "SupportSession",
+      "description": "Customer support chat sessions collection."
+    },
+    "/support_messages/{messageId}": {
+      "schema": "SupportMessage",
+      "description": "Support chat messages collection."
+    },
+    "/reseller_chat_sessions/{sessionId}": {
+      "schema": "ResellerChatSession",
+      "description": "Reseller chat sessions collection."
+    },
+    "/reseller_chat_messages/{messageId}": {
+      "schema": "ResellerChatMessage",
+      "description": "Reseller chat messages collection."
+    },
+    "/reseller_customer_chat_sessions/{sessionId}": {
+      "schema": "ResellerCustomerChatSession",
+      "description": "Reseller-customer chat sessions collection."
+    },
+    "/reseller_customer_chat_messages/{messageId}": {
+      "schema": "ResellerCustomerChatMessage",
+      "description": "Reseller-customer chat messages collection."
+    },
+    "/broadcast_notifications/{notificationId}": {
+      "schema": "BroadcastNotification",
+      "description": "System-wide notifications collection."
+    },
+    "/sla_admins/{adminId}": {
+      "schema": "SlaAdmin",
+      "description": "SLA Administrator collection."
+    },
+    "/sla_staff/{staffId}": {
+      "schema": "SlaStaff",
+      "description": "SLA Staff collection."
+    },
+    "/system_settings/{settingId}": {
+      "schema": "SystemSetting",
+      "description": "System settings collection."
+    },
+    "/reseller_profiles/{userId}": {
+      "schema": "ResellerProfile",
+      "description": "Reseller profiles collection."
+    },
+    "/reseller_product_selection/{selectionId}": {
+      "schema": "ResellerProductSelection",
+      "description": "Reseller product selections collection."
+    },
+    "/deposit_requests/{requestId}": {
+      "schema": "DepositRequest",
+      "description": "Reseller deposit requests collection."
+    },
+    "/withdrawal_requests/{requestId}": {
+      "schema": "WithdrawalRequest",
+      "description": "Reseller withdrawal requests collection."
+    },
+    "/seasonal_themes/{themeId}": {
+      "schema": "SeasonalTheme",
+      "description": "Seasonal themes collection."
+    },
+    "/ach_customers/{id}": {
+      "schema": "AchCustomer",
+      "description": "ACH customers collection."
+    },
+    "/ach_financials/{id}": {
+      "schema": "AchFinancial",
+      "description": "ACH financials collection."
+    },
+    "/virtual_profiles/{id}": {
+      "schema": "VirtualProfile",
+      "description": "Virtual profiles collection."
+    },
+    "/virtual_customer_profiles/{id}": {
+      "schema": "VirtualProfile",
+      "description": "Virtual customer profiles collection."
+    }
+  }
+}
