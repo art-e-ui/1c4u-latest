@@ -989,7 +989,12 @@ export default function SQCVirtualOrdersPage() {
                       <div className="grid grid-cols-3 gap-2 text-xs text-muted-foreground mb-2">
                         <span>Profile: <span className="text-foreground font-medium">{order.profileName}</span></span>
                         <span>Reseller: <span className="text-foreground font-medium">{order.resellerName}</span></span>
-                        <span>ID: <span className="font-mono text-foreground">{order.resellerId}</span></span>
+                        <span>ID: <span className="font-mono text-foreground">
+                          {(() => {
+                            const reseller = resellers.find(r => r.id === order.resellerId);
+                            return reseller?.resellerId ? `1CR${reseller.resellerId}` : (String(order.resellerId).startsWith('1CR') ? order.resellerId : (/^\d+$/.test(String(order.resellerId)) ? `1CR${order.resellerId}` : order.resellerId));
+                          })()}
+                        </span></span>
                       </div>
                       <div className="text-xs text-muted-foreground mb-2">
                         Ship to: {order.shippingAddress}
