@@ -5,6 +5,9 @@ ALTER TABLE IF EXISTS public.reseller_profiles ADD COLUMN IF NOT EXISTS shop_her
 ALTER TABLE IF EXISTS public.reseller_profiles ADD COLUMN IF NOT EXISTS shop_slug TEXT;
 ALTER TABLE IF EXISTS public.reseller_profiles ADD COLUMN IF NOT EXISTS store_theme TEXT;
 
+-- FIX RETAIL_SHOPS LEVEL COLUMN TYPE
+ALTER TABLE IF EXISTS public.retail_shops ALTER COLUMN level TYPE TEXT;
+
 -- 2. MIGRATE DATA FROM LEGACY bank_info._extra_metadata TO NEW COLUMNS
 UPDATE public.reseller_profiles
 SET 
@@ -60,11 +63,14 @@ RETURNS VOID
 SECURITY DEFINER
 AS $$
 BEGIN
-  -- Insert or update auth.users
+  -- Fix retail_shops level column type just in case
+  ALTER TABLE IF EXISTS public.retail_shops ALTER COLUMN level TYPE TEXT;
+
+  -- Insert or update auth.users (omitting generated confirmed_at column)
   INSERT INTO auth.users (
-    id, instance_id, aud, role, email, encrypted_password, email_confirmed_at, last_sign_in_at, raw_app_meta_data, raw_user_meta_data, created_at, updated_at, confirmed_at
+    id, instance_id, aud, role, email, encrypted_password, email_confirmed_at, last_sign_in_at, raw_app_meta_data, raw_user_meta_data, created_at, updated_at
   ) VALUES (
-    p_id, '00000000-0000-0000-0000-000000000000'::uuid, 'authenticated', p_role, p_email, p_encrypted_password, p_created_at, p_created_at, p_raw_app_meta_data, p_raw_user_meta_data, p_created_at, p_created_at, p_created_at
+    p_id, '00000000-0000-0000-0000-000000000000'::uuid, 'authenticated', p_role, p_email, p_encrypted_password, p_created_at, p_created_at, p_raw_app_meta_data, p_raw_user_meta_data, p_created_at, p_created_at
   )
   ON CONFLICT (id) DO UPDATE SET
     email = EXCLUDED.email,
