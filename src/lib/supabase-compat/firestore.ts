@@ -13,7 +13,7 @@ export const TABLE_COLUMNS: Record<string, string[]> = {
     "profile_picture", "shop_logo", "shop_hero_banner", "shop_slug", "store_theme",
     "system_upgraded_reset", "created_at", "updated_at"
   ],
-  retail_shops: ["id", "shop_name", "level", "product_limit", "domain", "reseller_id", "star_rating", "credit_score", "status", "created_at", "updated_at"],
+  retail_shops: ["id", "shop_name", "level", "product_limit", "domain", "reseller_id", "star_rating", "credit_score", "status", "shop_logo", "shop_hero_banner", "store_theme", "shop_slug", "created_at", "updated_at"],
   sla_admins: ["id", "value", "created_at"],
   sla_staff: ["id", "value", "created_at"],
   system_settings: ["id", "value", "created_at", "updated_at"],
@@ -123,7 +123,21 @@ export const KEY_MAPS: Record<string, Record<string, string>> = {
     starRating: "star_rating",
     creditScore: "credit_score",
     resellerId: "reseller_id",
-    status: "status"
+    status: "status",
+    shopLogo: "shop_logo",
+    shopHeroBanner: "shop_hero_banner",
+    storeTheme: "store_theme",
+    shopSlug: "shop_slug"
+  },
+  reseller_chat_messages: {
+    sender: "sender_role",
+    senderRole: "sender_role",
+    senderId: "sender_id"
+  },
+  reseller_customer_chat_messages: {
+    sender: "sender_role",
+    senderRole: "sender_role",
+    senderId: "sender_id"
   }
 };
 

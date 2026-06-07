@@ -235,7 +235,7 @@ export default function Reseller2AdminPage() {
       setMessages(prev => {
         if (!isInitialLoad) {
           const prevIds = new Set(prev.map(m => m.id));
-          const newResellerMsgs = newMessages.filter(m => !prevIds.has(m.id) && m.sender === "reseller");
+          const newResellerMsgs = newMessages.filter(m => !prevIds.has(m.id) && (m.sender || m.sender_role) === "reseller");
           
           if (newResellerMsgs.length > 0) {
             if (soundEnabled) playNotificationSound();
@@ -247,7 +247,7 @@ export default function Reseller2AdminPage() {
       });
 
       // Mark as read
-      const unread = newMessages.filter(m => m.sender === "reseller" && !m.is_read);
+      const unread = newMessages.filter(m => (m.sender || m.sender_role) === "reseller" && !m.is_read);
       if (unread.length > 0) {
         unread.forEach(msg => {
           updateDoc(doc(db, "reseller_chat_messages", msg.id), { is_read: true }).catch(console.error);
@@ -666,16 +666,16 @@ export default function Reseller2AdminPage() {
                   const displayText = product ? productText : imgText;
 
                   return (
-                    <div key={m.id} className={`flex ${m.sender === "admin" ? "flex-row-reverse" : "flex-row"} items-center gap-2 group`}>
+                    <div key={m.id} className={`flex ${(m.sender || m.sender_role) === "admin" ? "flex-row-reverse" : "flex-row"} items-center gap-2 group`}>
                       <div
                         className={cn(
                           "max-w-[80%] rounded-2xl px-3 py-2 text-sm relative",
-                          m.sender === "admin"
+                          (m.sender || m.sender_role) === "admin"
                             ? "bg-primary text-primary-foreground rounded-br-md"
                             : "bg-muted text-foreground rounded-bl-md"
                         )}
                       >
-                        {m.sender !== "admin" && (
+                        {(m.sender || m.sender_role) !== "admin" && (
                           <p className="text-[10px] font-semibold mb-0.5 opacity-70">{activeSession?.reseller_name}</p>
                         )}
                         {displayText && <p className="leading-relaxed">{displayText}</p>}
@@ -690,7 +690,7 @@ export default function Reseller2AdminPage() {
                         )}
                         <p className={cn(
                           "text-[9px] mt-1",
-                          m.sender === "admin" ? "text-primary-foreground/60" : "text-muted-foreground/60"
+                          (m.sender || m.sender_role) === "admin" ? "text-primary-foreground/60" : "text-muted-foreground/60"
                         )}>
                           {new Date(m.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                         </p>

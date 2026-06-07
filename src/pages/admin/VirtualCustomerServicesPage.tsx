@@ -274,7 +274,7 @@ export default function VirtualCustomerServicesPage() {
       setMessages(prev => {
         if (!isInitialLoad) {
           const prevIds = new Set(prev.map(m => m.id));
-          const newResellerMsgs = newMessages.filter(m => !prevIds.has(m.id) && m.sender === "reseller");
+          const newResellerMsgs = newMessages.filter(m => !prevIds.has(m.id) && (m.sender || m.sender_role) === "reseller");
           if (newResellerMsgs.length > 0) {
             playNotificationSound();
             if (document.hidden) startTabFlash();
@@ -284,7 +284,7 @@ export default function VirtualCustomerServicesPage() {
       });
 
       // Mark as read
-      const unread = newMessages.filter(m => m.sender === "reseller" && !m.is_read);
+      const unread = newMessages.filter(m => (m.sender || m.sender_role) === "reseller" && !m.is_read);
       if (unread.length > 0) {
         unread.forEach(msg => {
           updateDoc(doc(db, "reseller_customer_chat_messages", msg.id), { is_read: true }).catch(console.error);
@@ -602,9 +602,9 @@ export default function VirtualCustomerServicesPage() {
               const displayText = product ? productText : imgText;
 
               return (
-                <div key={msg.id} className={`flex ${msg.sender === "admin" || msg.sender === "customer" ? "flex-row-reverse" : "flex-row"} items-center gap-2 group`}>
+                <div key={msg.id} className={`flex ${(msg.sender || msg.sender_role) === "admin" || (msg.sender || msg.sender_role) === "customer" ? "flex-row-reverse" : "flex-row"} items-center gap-2 group`}>
                   <div className={`max-w-[70%] p-3 rounded-2xl shadow-sm relative ${
-                    msg.sender === "admin" || msg.sender === "customer"
+                    (msg.sender || msg.sender_role) === "admin" || (msg.sender || msg.sender_role) === "customer"
                       ? "bg-primary text-primary-foreground rounded-tr-none" 
                       : "bg-card text-card-foreground rounded-tl-none border"
                   }`}>

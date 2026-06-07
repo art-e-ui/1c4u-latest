@@ -131,7 +131,7 @@ function SupportChatPanel() {
       setMessages(prev => {
         if (!isInitialLoad) {
           const prevIds = new Set(prev.map(m => m.id));
-          const newAdminMsgs = newMessages.filter(m => !prevIds.has(m.id) && m.sender === "admin");
+          const newAdminMsgs = newMessages.filter(m => !prevIds.has(m.id) && (m.sender || m.sender_role) === "admin");
           
           if (newAdminMsgs.length > 0) {
             playNotificationSound();
@@ -245,14 +245,14 @@ function SupportChatPanel() {
           const displayText = product ? productText : text;
 
           return (
-            <div key={m.id} className={`flex ${m.sender === "reseller" ? "justify-end" : "justify-start"}`}>
+            <div key={m.id} className={`flex ${(m.sender || m.sender_role) === "reseller" ? "justify-end" : "justify-start"}`}>
               <div className={cn(
                 "max-w-[80%] rounded-2xl px-3 py-2 text-sm",
-                m.sender === "reseller"
+                (m.sender || m.sender_role) === "reseller"
                   ? "bg-primary text-primary-foreground rounded-br-sm"
                   : "bg-muted text-foreground rounded-bl-sm"
               )}>
-                {m.sender !== "reseller" && (
+                {(m.sender || m.sender_role) !== "reseller" && (
                   <p className="text-[10px] font-semibold mb-0.5 opacity-70">{t("reseller.support")}</p>
                 )}
                 {displayText && <p>{displayText}</p>}
@@ -267,7 +267,7 @@ function SupportChatPanel() {
                 )}
                 <p className={cn(
                   "text-[10px] mt-1 text-right",
-                  m.sender === "reseller" ? "text-primary-foreground/60" : "text-muted-foreground/60"
+                  (m.sender || m.sender_role) === "reseller" ? "text-primary-foreground/60" : "text-muted-foreground/60"
                 )}>
                   {new Date(m.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                 </p>
@@ -388,7 +388,7 @@ function CustomerChatPanel() {
       setMessages(prev => {
         if (!isInitialLoad) {
           const prevIds = new Set(prev.map(m => m.id));
-          const newCustomerMsgs = newMessages.filter(m => !prevIds.has(m.id) && m.sender === "customer");
+          const newCustomerMsgs = newMessages.filter(m => !prevIds.has(m.id) && (m.sender || m.sender_role) === "customer");
           if (newCustomerMsgs.length > 0) {
             playNotificationSound();
             if (document.hidden) startTabFlash();
@@ -517,14 +517,14 @@ function CustomerChatPanel() {
               const displayText = product ? productText : text;
 
               return (
-                <div key={m.id} className={`flex ${m.sender === "reseller" ? "justify-end" : "justify-start"}`}>
+                <div key={m.id} className={`flex ${(m.sender || m.sender_role) === "reseller" ? "justify-end" : "justify-start"}`}>
                   <div className={cn(
                     "max-w-[85%] rounded-2xl px-3 py-2 text-sm",
-                    m.sender === "reseller"
+                    (m.sender || m.sender_role) === "reseller"
                       ? "bg-primary text-primary-foreground rounded-br-sm"
                       : "bg-muted text-foreground rounded-bl-sm"
                   )}>
-                    {m.sender !== "reseller" && (
+                    {(m.sender || m.sender_role) !== "reseller" && (
                       <p className="text-[10px] font-semibold mb-0.5 opacity-70">{activeSession?.customer_name || t("reseller.customers")}</p>
                     )}
                     {displayText && <p>{displayText}</p>}
@@ -539,7 +539,7 @@ function CustomerChatPanel() {
                     )}
                     <p className={cn(
                       "text-[10px] mt-1 text-right",
-                      m.sender === "reseller" ? "text-primary-foreground/60" : "text-muted-foreground/60"
+                      (m.sender || m.sender_role) === "reseller" ? "text-primary-foreground/60" : "text-muted-foreground/60"
                     )}>
                       {new Date(m.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                     </p>

@@ -53,7 +53,7 @@ export default function ResellerChatDialog({
   useEffect(() => {
     if (!open || !sessionId || messages.length === 0) return;
     
-    const unreadResellerMessages = messages.filter(m => m.sender === 'reseller' && !m.is_read);
+    const unreadResellerMessages = messages.filter(m => (m.sender || m.sender_role) === 'reseller' && !m.is_read);
     
     if (unreadResellerMessages.length > 0) {
       unreadResellerMessages.forEach(msg => {
@@ -165,9 +165,9 @@ export default function ResellerChatDialog({
               const { text: imgText, imageUrl } = parseImageAttachment(m.message);
               
               return (
-                <div key={m.id} className={`flex ${m.sender === 'customer' ? 'justify-end' : 'justify-start'}`}>
+                <div key={m.id} className={`flex ${(m.sender || m.sender_role) === 'customer' ? 'justify-end' : 'justify-start'}`}>
                   <div className={`max-w-[80%] rounded-2xl px-3 py-2 text-sm ${
-                    m.sender === 'customer'
+                    (m.sender || m.sender_role) === 'customer'
                       ? 'bg-primary text-primary-foreground rounded-br-md'
                       : 'bg-muted text-foreground rounded-bl-md'
                   }`}>
@@ -182,7 +182,7 @@ export default function ResellerChatDialog({
                         onClick={() => window.open(imageUrl, "_blank")}
                       />
                     )}
-                    <p className={`text-[9px] mt-1 ${m.sender === 'customer' ? 'text-primary-foreground/60' : 'text-muted-foreground/60'}`}>
+                    <p className={`text-[9px] mt-1 ${(m.sender || m.sender_role) === 'customer' ? 'text-primary-foreground/60' : 'text-muted-foreground/60'}`}>
                       {new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                     </p>
                   </div>

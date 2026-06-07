@@ -384,22 +384,26 @@ export default function SQCVirtualProfilePage() {
 
     const q = query(
       collection(db, "reseller_chat_messages"),
-      where("session_id", "==", activeSessionId),
-      orderBy("created_at", "asc")
+      where("session_id", "==", activeSessionId)
     );
 
     let isInitialLoad = true;
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
-      const newMessages = snapshot.docs.map(doc => ({
+      const allMessages = snapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data()
       } as ChatMessage));
       
+      // Sort in memory to avoid composite index
+      const newMessages = [...allMessages].sort((a, b) => 
+        new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+      );
+      
       setMessages(prev => {
         if (!isInitialLoad) {
           const prevIds = new Set(prev.map(m => m.id));
-          const newResellerMsgs = newMessages.filter(m => !prevIds.has(m.id) && m.sender === "reseller");
+          const newResellerMsgs = newMessages.filter(m => !prevIds.has(m.id) && (m.sender || m.sender_role) === "reseller");
           
           if (newResellerMsgs.length > 0) {
             if (soundEnabled) playNotificationSound();
@@ -411,7 +415,7 @@ export default function SQCVirtualProfilePage() {
       });
 
       // Mark as read
-      const unread = newMessages.filter(m => m.sender === "reseller" && !m.is_read);
+      const unread = newMessages.filter(m => (m.sender || m.sender_role) === "reseller" && !m.is_read);
       if (unread.length > 0) {
         unread.forEach(msg => {
           updateDoc(doc(db, "reseller_chat_messages", msg.id), { is_read: true }).catch(console.error);
@@ -1053,23 +1057,23 @@ export default function SQCVirtualProfilePage() {
                   {messages.map((m) => {
                     const { text, product } = parseAttachment(m.message);
                     return (
-                      <div key={m.id} className={`flex ${m.sender === "admin" ? "justify-end" : "justify-start"}`}>
+                      <div key={m.id} className={`flex ${(m.sender || m.sender_role) === "admin" ? "justify-end" : "justify-start"}`}>
                         <div
                           className={cn(
                             "max-w-[80%] rounded-2xl px-3 py-2 text-sm",
-                            m.sender === "admin"
+                            (m.sender || m.sender_role) === "admin"
                               ? "bg-primary text-primary-foreground rounded-br-md"
                               : "bg-muted text-foreground rounded-bl-md"
                           )}
                         >
-                          {m.sender !== "admin" && (
+                          {(m.sender || m.sender_role) !== "admin" && (
                             <p className="text-[10px] font-semibold mb-0.5 opacity-70">{activeSession?.reseller_name}</p>
                           )}
                           {text && <p className="leading-relaxed">{text}</p>}
                           {product && <ProductAttachmentCard product={product} />}
                           <p className={cn(
                             "text-[9px] mt-1",
-                            m.sender === "admin" ? "text-primary-foreground/60" : "text-muted-foreground/60"
+                            (m.sender || m.sender_role) === "admin" ? "text-primary-foreground/60" : "text-muted-foreground/60"
                           )}>
                             {new Date(m.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                           </p>

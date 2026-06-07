@@ -540,6 +540,7 @@ export function ResellerProvider({ children }: { children: React.ReactNode }) {
 
       if (updates.firstName !== undefined) userUpdates.first_name = updates.firstName;
       if (updates.lastName !== undefined) userUpdates.last_name = updates.lastName;
+      if (updates.email !== undefined) userUpdates.email = updates.email;
       if (updates.phone !== undefined) {
         userUpdates.phone = updates.phone;
         profileUpdates.phone = updates.phone;

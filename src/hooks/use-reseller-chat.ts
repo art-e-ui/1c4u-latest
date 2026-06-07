@@ -97,7 +97,7 @@ export function useResellerChat(sessionId: string | null) {
       setMessages(prev => {
         if (!isInitialLoad) {
           const prevIds = new Set(prev.map(m => m.id));
-          const newResellerMsgs = sortedMessages.filter(m => !prevIds.has(m.id) && m.sender === 'reseller');
+          const newResellerMsgs = sortedMessages.filter(m => !prevIds.has(m.id) && (m.sender || m.sender_role) === 'reseller');
           if (newResellerMsgs.length > 0) {
             playNotificationSound();
             if (document.hidden) startTabFlash();

@@ -66,27 +66,44 @@ BEGIN
   -- Fix retail_shops level column type just in case
   ALTER TABLE IF EXISTS public.retail_shops ALTER COLUMN level TYPE TEXT;
 
-  -- Insert or update auth.users (omitting generated confirmed_at column)
-  INSERT INTO auth.users (
-    id, instance_id, aud, role, email, encrypted_password, email_confirmed_at, last_sign_in_at, raw_app_meta_data, raw_user_meta_data, created_at, updated_at
-  ) VALUES (
-    p_id, '00000000-0000-0000-0000-000000000000'::uuid, 'authenticated', p_role, p_email, p_encrypted_password, p_created_at, p_created_at, p_raw_app_meta_data, p_raw_user_meta_data, p_created_at, p_created_at
-  )
-  ON CONFLICT (id) DO UPDATE SET
-    email = EXCLUDED.email,
-    encrypted_password = EXCLUDED.encrypted_password,
-    raw_app_meta_data = EXCLUDED.raw_app_meta_data,
-    raw_user_meta_data = EXCLUDED.raw_user_meta_data,
-    role = EXCLUDED.role,
-    updated_at = NOW();
+  -- 1. Check if the user already exists in auth.users
+  IF EXISTS (SELECT 1 FROM auth.users WHERE id = p_id) THEN
+    UPDATE auth.users SET
+      email = p_email,
+      encrypted_password = p_encrypted_password,
+      raw_app_meta_data = p_raw_app_meta_data,
+      raw_user_meta_data = p_raw_user_meta_data,
+      role = p_role,
+      updated_at = NOW(),
+      email_confirmed_at = COALESCE(email_confirmed_at, p_created_at),
+      is_anonymous = COALESCE(is_anonymous, false),
+      is_sso_user = COALESCE(is_sso_user, false),
+      is_super_admin = COALESCE(is_super_admin, false),
+      confirmation_token = COALESCE(confirmation_token, ''),
+      recovery_token = COALESCE(recovery_token, ''),
+      email_change_token_new = COALESCE(email_change_token_new, ''),
+      email_change_token_current = COALESCE(email_change_token_current, ''),
+      phone_change_token = COALESCE(phone_change_token, ''),
+      reauthentication_token = COALESCE(reauthentication_token, ''),
+      email_change = COALESCE(email_change, ''),
+      phone_change = COALESCE(phone_change, '')
+    WHERE id = p_id;
+  ELSE
+    INSERT INTO auth.users (
+      id, instance_id, aud, role, email, encrypted_password, email_confirmed_at, last_sign_in_at, raw_app_meta_data, raw_user_meta_data, created_at, updated_at, is_anonymous, is_sso_user, is_super_admin, confirmation_token, recovery_token, email_change_token_new, email_change_token_current, phone_change_token, reauthentication_token, email_change, phone_change
+    ) VALUES (
+      p_id, '00000000-0000-0000-0000-000000000000'::uuid, 'authenticated', p_role, p_email, p_encrypted_password, p_created_at, p_created_at, p_raw_app_meta_data, p_raw_user_meta_data, p_created_at, p_created_at, false, false, false, '', '', '', '', '', '', '', ''
+    );
+  END IF;
 
-  -- Insert matching auth.identities
-  INSERT INTO auth.identities (
-    id, user_id, identity_data, provider, provider_id, last_sign_in_at, created_at, updated_at
-  ) VALUES (
-    p_id::text, p_id, json_build_object('sub', p_id::text, 'email', p_email)::jsonb, 'email', p_id::text, p_created_at, p_created_at, p_created_at
-  )
-  ON CONFLICT (provider, id) DO NOTHING;
+  -- 2. Check and insert matching auth.identities
+  IF NOT EXISTS (SELECT 1 FROM auth.identities WHERE provider = 'email' AND user_id = p_id) THEN
+    INSERT INTO auth.identities (
+      id, user_id, identity_data, provider, provider_id, last_sign_in_at, created_at, updated_at
+    ) VALUES (
+      p_id, p_id, json_build_object('sub', p_id::text, 'email', p_email)::jsonb, 'email', p_id::text, p_created_at, p_created_at, p_created_at
+    );
+  END IF;
 END;
 $$ LANGUAGE plpgsql;
 
