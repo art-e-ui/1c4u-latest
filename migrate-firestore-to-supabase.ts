@@ -69,9 +69,24 @@ const TABLE_COLUMNS: Record<string, string[]> = {
   sla_admins: ["id", "value", "created_at"],
   sla_staff: ["id", "value", "created_at"],
   system_settings: ["id", "value", "created_at", "updated_at"],
-  orders: ["id", "user_id", "reseller_id", "reseller_uid", "total_amount", "status", "shipping_address", "payment_method", "payment_status", "created_at", "updated_at"],
-  deposit_requests: ["id", "reseller_id", "reseller_doc_id", "amount", "status", "payment_method", "receipt_url", "created_at", "updated_at"],
-  withdrawal_requests: ["id", "reseller_id", "reseller_doc_id", "amount", "status", "bank_name", "account_number", "account_name", "created_at", "updated_at"],
+  orders: [
+    "id", "user_id", "reseller_id", "reseller_uid", "total_amount", "status", "shipping_address", 
+    "payment_method", "payment_status", "created_at", "updated_at",
+    "order_id", "customer_name", "customer_email", "reseller_name", "reseller_numeric_id", 
+    "staff_username", "admin_name", "total_cost", "service_cost", "profit", "items", 
+    "items_count", "products_count", "focused", "picked_up_at", "completed_at", 
+    "referral_id", "referred_by", "member_of_admin_id", "subtotal", "tax", "shipping", "order_number"
+  ],
+  deposit_requests: [
+    "id", "reseller_id", "reseller_doc_id", "amount", "status", "payment_method", "receipt_url", 
+    "created_at", "updated_at",
+    "reseller_name", "usdt_address", "referral_id", "member_of_admin_id", "proof_image"
+  ],
+  withdrawal_requests: [
+    "id", "reseller_id", "reseller_doc_id", "amount", "status", "bank_name", "account_number", 
+    "account_name", "created_at", "updated_at",
+    "reseller_name", "payment_method", "usdt_address", "bank_info", "referral_id", "member_of_admin_id"
+  ],
   support_sessions: ["id", "user_email", "user_name", "status", "created_at"],
   support_messages: ["id", "session_id", "sender_name", "sender_role", "message", "created_at"],
   reseller_chat_sessions: ["id", "reseller_id", "status", "last_message_at", "created_at"],
@@ -223,7 +238,31 @@ function mapFirestoreToSupabase(docId: string, rawData: any, table: string, user
       payment_method: data.payment_method || "Bank Transfer",
       payment_status: data.payment_status || "Paid",
       created_at: data.created_at || data.createdAt || new Date().toISOString(),
-      updated_at: data.updated_at || data.updatedAt || new Date().toISOString()
+      updated_at: data.updated_at || data.updatedAt || new Date().toISOString(),
+      // Enriched metadata fields
+      order_id: data.order_id || data.orderId || "",
+      customer_name: data.customer_name || data.customerEmail || data.customerName || "",
+      customer_email: data.customer_email || data.customerEmail || "",
+      reseller_name: data.reseller_name || data.resellerName || "",
+      reseller_numeric_id: data.reseller_numeric_id || data.resellerNumericId || null,
+      staff_username: data.staff_username || data.staffUsername || "",
+      admin_name: data.admin_name || data.adminName || "",
+      total_cost: data.total_cost || data.totalCost || 0,
+      service_cost: data.service_cost || data.serviceCost || 0,
+      profit: data.profit || data.profits || 0,
+      items: data.items || null,
+      items_count: data.items_count || data.itemsCount || 0,
+      products_count: data.products_count || data.productsCount || 0,
+      focused: data.focused || false,
+      picked_up_at: data.picked_up_at || data.pickedUpAt || null,
+      completed_at: data.completed_at || data.completedAt || null,
+      referral_id: data.referral_id || data.referralId || "",
+      referred_by: data.referred_by || data.referredBy || "",
+      member_of_admin_id: data.member_of_admin_id || data.memberOfAdminId || "",
+      subtotal: data.subtotal || 0,
+      tax: data.tax || 0,
+      shipping: data.shipping || 0,
+      order_number: data.order_number || data.orderNumber || null
     };
   } else if (table === "deposit_requests") {
     mapped = {
@@ -235,7 +274,13 @@ function mapFirestoreToSupabase(docId: string, rawData: any, table: string, user
       payment_method: data.payment_method || data.method || "Bank Transfer",
       receipt_url: data.receipt_url || data.proofImage || "",
       created_at: data.created_at || data.createdAt || new Date().toISOString(),
-      updated_at: data.updated_at || data.updatedAt || new Date().toISOString()
+      updated_at: data.updated_at || data.updatedAt || new Date().toISOString(),
+      // Enriched metadata fields
+      reseller_name: data.reseller_name || data.resellerName || "",
+      usdt_address: data.usdt_address || data.usdtAddress || "",
+      referral_id: data.referral_id || data.referralId || "",
+      member_of_admin_id: data.member_of_admin_id || data.memberOfAdminId || "",
+      proof_image: data.proof_image || data.proofImage || ""
     };
   } else if (table === "withdrawal_requests") {
     mapped = {
@@ -248,7 +293,14 @@ function mapFirestoreToSupabase(docId: string, rawData: any, table: string, user
       account_number: data.bankInfo?.accountNumber || data.account_number || "",
       account_name: data.bankInfo?.accountName || data.account_name || "",
       created_at: data.created_at || data.createdAt || new Date().toISOString(),
-      updated_at: data.updated_at || data.updatedAt || new Date().toISOString()
+      updated_at: data.updated_at || data.updatedAt || new Date().toISOString(),
+      // Enriched metadata fields
+      reseller_name: data.reseller_name || data.resellerName || "",
+      payment_method: data.payment_method || data.paymentMethod || data.method || "",
+      usdt_address: data.usdt_address || data.usdtAddress || "",
+      bank_info: data.bank_info || data.bankInfo || {},
+      referral_id: data.referral_id || data.referralId || "",
+      member_of_admin_id: data.member_of_admin_id || data.memberOfAdminId || ""
     };
   } else if (table === "support_sessions") {
     mapped = {

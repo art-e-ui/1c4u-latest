@@ -172,7 +172,8 @@ export default function ARSRetailShopsPage() {
       const profileRef = doc(db, 'reseller_profiles', editShop.id);
       await updateDoc(profileRef, {
         shop_name: editShop.shopName,
-        level: `VIP-${editShop.vipLevel}`
+        level: `VIP-${editShop.vipLevel}`,
+        status: editShop.status
       });
 
       toast.success(`${editShop.shopName} updated successfully`);

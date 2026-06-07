@@ -13,7 +13,7 @@ export const TABLE_COLUMNS: Record<string, string[]> = {
     "profile_picture", "shop_logo", "shop_hero_banner", "shop_slug", "store_theme",
     "system_upgraded_reset", "created_at", "updated_at"
   ],
-  retail_shops: ["id", "shop_name", "level", "product_limit", "domain", "reseller_id", "star_rating", "credit_score", "created_at", "updated_at"],
+  retail_shops: ["id", "shop_name", "level", "product_limit", "domain", "reseller_id", "star_rating", "credit_score", "status", "created_at", "updated_at"],
   sla_admins: ["id", "value", "created_at"],
   sla_staff: ["id", "value", "created_at"],
   system_settings: ["id", "value", "created_at", "updated_at"],
@@ -108,6 +108,22 @@ export const KEY_MAPS: Record<string, Record<string, string>> = {
     referralId: "referral_id",
     memberOfAdminId: "member_of_admin_id",
     bankInfo: "bank_info"
+  },
+  reseller_profiles: {
+    profilePicture: "profile_picture",
+    shopLogo: "shop_logo",
+    shopHeroBanner: "shop_hero_banner",
+    shopSlug: "shop_slug",
+    storeTheme: "store_theme"
+  },
+  retail_shops: {
+    shopName: "shop_name",
+    vipLevel: "level",
+    productsLimit: "product_limit",
+    starRating: "star_rating",
+    creditScore: "credit_score",
+    resellerId: "reseller_id",
+    status: "status"
   }
 };
 
@@ -334,8 +350,12 @@ export interface QueryConstraint {
   conditions?: QueryConstraint[];
 }
 
-export function collection(database: any, path: string) {
-  return { type: "collection", path };
+export function collection(database: any, path: string, ...pathSegments: string[]) {
+  let finalPath = path;
+  if (pathSegments.length > 0) {
+    finalPath = [path, ...pathSegments].join("/");
+  }
+  return { type: "collection", path: finalPath };
 }
 
 export function doc(first: any, second?: any, third?: any) {
@@ -530,6 +550,54 @@ export async function getDocs(queryObj: any) {
   if (path === "_connection_test_") {
     return wrapDocs([{ id: "ping" }], path);
   }
+
+  // Intercept subcollection fetch for order items and read from parent order's JSON field instead
+  if (path && path.startsWith("orders/") && path.endsWith("/order_items")) {
+    const parts = path.split("/");
+    const orderId = parts[1];
+    console.log(`[SUPABASE_FIRESTORE] Intercepted getDocs for order items of order ${orderId}`);
+    
+    const { data: order, error } = await supabase
+      .from("orders")
+      .select("items")
+      .eq("id", orderId)
+      .maybeSingle();
+
+    if (error || !order || !order.items) {
+      console.warn(`[SUPABASE_FIRESTORE] Failed to load order items for order ${orderId}:`, error?.message);
+      return wrapDocs([], path);
+    }
+
+    let itemsArray: any[] = [];
+    if (typeof order.items === "string") {
+      try {
+        itemsArray = JSON.parse(order.items);
+      } catch (e) {
+        console.warn(e);
+      }
+    } else if (Array.isArray(order.items)) {
+      itemsArray = order.items;
+    }
+
+    const mappedItems = itemsArray.map((item, idx) => {
+      const pId = item.productId || item.product_id || item.id || `item-${idx}`;
+      return {
+        id: pId,
+        product_id: pId,
+        name: item.name || "",
+        price_at_time: item.price || 0,
+        adjusted_price: item.adjustedPrice || item.price || 0,
+        quantity: item.qty || item.quantity || 1,
+        // CamelCase for frontend compatibility
+        productId: pId,
+        priceAtTime: item.price || 0,
+        adjustedPrice: item.adjustedPrice || item.price || 0,
+        qty: item.qty || item.quantity || 1
+      };
+    });
+
+    return wrapDocs(mappedItems, path);
+  }
   
   // Create single query and execute
   const qObj = queryObj.type === "query" ? queryObj : { type: "query", path, constraints: [] };
@@ -588,6 +656,12 @@ export async function addDoc(collectionObj: any, data: any) {
     return { id: "mock_test_id", path };
   }
 
+  // Intercept subcollection writes for order items and treat as no-op success
+  if (path && path.startsWith("orders/") && path.endsWith("/order_items")) {
+    console.log(`[SUPABASE_FIRESTORE] Intercepted addDoc write for subcollection ${path} (no-op)`);
+    return { id: data.product_id || "mock_item_id", path };
+  }
+
   const dataWithId = { ...data };
   if (dataWithId.id === undefined || dataWithId.id === null) {
     const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
@@ -637,13 +711,19 @@ export async function updateDoc(docObj: any, data: any) {
   const docSnap = await getDoc(docObj);
   const currentData = docSnap.exists() ? docSnap.data() : {};
   
-  const mergedData = { ...currentData, ...dataCopy };
+  // Convert both existing data and updates to snake_case first to avoid camelCase overriding snake_case
+  const currentSnake = mapKeysToSnakeCase(currentData, path);
+  const updatesSnake = mapKeysToSnakeCase(dataCopy, path);
+  
+  const mergedData = { ...currentSnake, ...updatesSnake };
 
   // Apply increments
   if (Object.keys(increments).length > 0) {
     for (const key of Object.keys(increments)) {
-      const currentVal = Number(currentData[key] || 0);
-      mergedData[key] = currentVal + increments[key];
+      const map = KEY_MAPS[path];
+      const snakeKey = (map && map[key]) ? map[key] : key;
+      const currentVal = Number(currentSnake[snakeKey] || currentSnake[key] || 0);
+      mergedData[snakeKey] = currentVal + increments[key];
     }
   }
 
@@ -698,9 +778,12 @@ export async function setDoc(docObj: any, data: any, options?: any) {
   if (merge) {
     const docSnap = await getDoc(docObj);
     if (docSnap.exists()) {
+      // Convert both existing data and updates to snake_case first to avoid camelCase overriding snake_case
+      const existingSnake = mapKeysToSnakeCase(docSnap.data(), path);
+      const updatesSnake = mapKeysToSnakeCase(data, path);
       mergedData = {
-        ...docSnap.data(),
-        ...mergedData
+        ...existingSnake,
+        ...updatesSnake
       };
     }
   }
