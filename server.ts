@@ -153,7 +153,8 @@ const TABLE_COLUMNS: Record<string, string[]> = {
   ach_financials: ["id", "transaction_id", "amount", "status", "created_at"],
   virtual_customer_profiles: ["id", "config", "created_at"],
   virtual_profiles: ["id", "config", "created_at"],
-  seasonal_themes: ["id", "name", "status", "config", "created_at"]
+  seasonal_themes: ["id", "name", "status", "config", "created_at"],
+  reseller_notifications: ["id", "reseller_id", "title", "message", "read", "created_at"]
 };
 
 function packMetadata(data: any, tableName: string): any {

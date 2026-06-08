@@ -312,10 +312,10 @@ export default function AdminResellersPage() {
       
       const docRef = await addDoc(collection(db, 'reseller_notifications'), {
         reseller_id: notificationForm.resellerId,
+        title: "System Alert",
         message: notificationForm.message,
         created_at: new Date().toISOString(),
-        read: false,
-        type: 'admin_alert'
+        read: false
       });
       
       console.log(`[NOTIFICATION] Notification sent successfully, doc ID: ${docRef.id}`);

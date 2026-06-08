@@ -135,10 +135,10 @@ export default function ARSRetailShopsPage() {
       
       await addDoc(collection(db, 'reseller_notifications'), {
         reseller_id: notifyTarget.id,
+        title: "System Alert",
         message: notifyMessage,
         created_at: new Date().toISOString(),
-        read: false,
-        type: 'admin_alert'
+        read: false
       });
       
       toast.success(`System notification sent to ${notifyTarget.shopName}`);
