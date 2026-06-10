@@ -18,18 +18,18 @@ export default function NotificationDialog({ open, onClose }: { open: boolean; o
     queryFn: async () => {
       const q = query(
         collection(db, 'broadcast_notifications'), 
-        where('is_archived', '==', false),
-        orderBy('broadcast_date', 'desc')
+        
+        orderBy('created_at', 'desc')
       );
       const snapshot = await getDocs(q);
       const broadcastNotifs = snapshot.docs.map(doc => {
         const data = doc.data();
         return {
           id: doc.id,
-          title: data.label,
+          title: data.title,
           message: data.message,
-          department: data.department,
-          timestamp: data.broadcast_date,
+          department: data.type,
+          timestamp: data.created_at,
           read: false,
           type: 'broadcast'
         };

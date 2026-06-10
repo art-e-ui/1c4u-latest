@@ -389,22 +389,21 @@ export function ResellerProvider({ children }: { children: React.ReactNode }) {
       if (data.referralCode) {
         try {
           const normalizedCode = data.referralCode.trim().toUpperCase();
-          const staffQuery = query(collection(db, 'sla_staff'), where('referral_id', '==', normalizedCode));
-          const staffSnapshot = await getDocs(staffQuery);
-          if (!staffSnapshot.empty) {
-            const staffData = staffSnapshot.docs[0].data();
-            referredByStaffId = staffSnapshot.docs[0].id;
-            memberOfAdminId = staffData.created_by_admin_id;
+          const response = await fetch(`/api/validate-referral/${encodeURIComponent(normalizedCode)}`);
+          const result = await response.json();
+          
+          if (result.valid) {
+            referredByStaffId = result.staffId;
+            memberOfAdminId = result.adminId;
             
-            const staffName = staffData.name || staffData.username || "Staff";
-            telegramStaffInfo = `\n👔 Staff: ${staffName}`;
-            
-            if (memberOfAdminId) {
-              const adminDoc = await getDocs(query(collection(db, 'sla_admins'), where('account_id', '==', memberOfAdminId)));
-              if (!adminDoc.empty) {
-                telegramStaffInfo += `\n🏢 Admin: ${adminDoc.docs[0].data().name || memberOfAdminId}`;
-              }
+            telegramStaffInfo = `\n👔 Staff: ${result.staffName}`;
+            if (result.adminName && result.adminName !== result.adminId) {
+              telegramStaffInfo += `\n🏢 Admin: ${result.adminName}`;
+            } else if (result.adminId) {
+              telegramStaffInfo += `\n🏢 Admin ID: ${result.adminId}`;
             }
+          } else {
+            console.log(`[RESELLER_REGISTRATION] No staff found with referral code: ${normalizedCode}`);
           }
         } catch (e) {
           console.warn("Could not look up referral code:", e);

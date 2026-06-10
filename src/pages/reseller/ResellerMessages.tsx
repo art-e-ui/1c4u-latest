@@ -160,9 +160,7 @@ function SupportChatPanel() {
     if (!text) setInput("");
     
     try {
-      await addDoc(collection(db, "reseller_chat_messages"), {
-        session_id: sessionId,
-        sender: "reseller",
+      await addDoc(collection(db, "reseller_chat_messages"), { session_id: sessionId, sender_role: "reseller", sender_id: reseller?.id || "",
         message: msg,
         is_read: false,
         created_at: new Date().toISOString()
@@ -414,9 +412,7 @@ function CustomerChatPanel() {
     if (!text) setInput("");
 
     try {
-      await addDoc(collection(db, "reseller_customer_chat_messages"), {
-        session_id: activeSessionId,
-        sender: "reseller",
+      await addDoc(collection(db, "reseller_customer_chat_messages"), { session_id: activeSessionId, sender_role: "reseller", sender_id: reseller?.id || "",
         message: msg,
         is_read: false,
         created_at: new Date().toISOString()

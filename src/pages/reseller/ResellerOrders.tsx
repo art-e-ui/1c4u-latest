@@ -83,6 +83,18 @@ export default function ResellerOrders() {
       where("reseller_uid", "==", reseller.id),
     ];
 
+    if (reseller.resellerId) {
+      const numericId = Number(reseller.resellerId);
+      conditions.push(where("reseller_id", "==", numericId));
+      conditions.push(where("resellerId", "==", numericId));
+      conditions.push(where("reseller_numeric_id", "==", numericId));
+      
+      // Also as string if needed
+      const stringNumericId = String(reseller.resellerId);
+      conditions.push(where("reseller_id", "==", stringNumericId));
+      conditions.push(where("resellerId", "==", stringNumericId));
+    }
+
     const q = query(
       collection(db, "orders"),
       or(...conditions)

@@ -81,7 +81,7 @@ export function useUnreadCount() {
   const { data: notifications = [] } = useQuery({
     queryKey: ['broadcast_notifications_unread', reseller?.id, isResellerPortal],
     queryFn: async () => {
-      const q = query(collection(db, 'broadcast_notifications'), where('is_archived', '==', false));
+      const q = query(collection(db, 'broadcast_notifications'), /* where is_archived */);
       const snapshot = await getDocs(q);
       const broadcastIds = snapshot.docs.map(doc => ({ id: doc.id }));
 

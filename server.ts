@@ -124,6 +124,7 @@ function translateQueryField(field: string, tableName: string): string {
 }
 
 const TABLE_COLUMNS: Record<string, string[]> = {
+  reseller_notifications: ["id", "reseller_id", "title", "message", "read", "created_at"],
   categories: ["id", "name", "description", "image", "created_at", "updated_at"],
   products: ["id", "name", "description", "price", "image", "images", "category_id", "stock", "status", "created_at", "updated_at"],
   users: ["id", "email", "role", "first_name", "last_name", "phone_number", "status", "system_upgraded_reset", "created_at", "updated_at"],
@@ -144,17 +145,16 @@ const TABLE_COLUMNS: Record<string, string[]> = {
   withdrawal_requests: ["id", "reseller_id", "reseller_doc_id", "amount", "status", "bank_name", "account_number", "account_name", "created_at", "updated_at"],
   support_sessions: ["id", "user_email", "user_name", "status", "created_at"],
   support_messages: ["id", "session_id", "sender_name", "sender_role", "message", "created_at"],
-  reseller_chat_sessions: ["id", "reseller_id", "status", "last_message_at", "created_at"],
-  reseller_chat_messages: ["id", "session_id", "sender_id", "sender_role", "message", "image_url", "created_at"],
-  reseller_customer_chat_sessions: ["id", "reseller_id", "customer_id", "customer_name", "last_message_at", "created_at"],
-  reseller_customer_chat_messages: ["id", "session_id", "sender_id", "sender_role", "message", "image_url", "created_at"],
+  reseller_chat_sessions: ["id", "reseller_id", "status", "unread_count", "last_message", "is_pinned", "is_online", "reseller_name", "last_message_at", "created_at"],
+  reseller_chat_messages: ["id", "session_id", "sender_id", "sender_role", "message", "is_read", "image_url", "created_at"],
+  reseller_customer_chat_sessions: ["id", "reseller_id", "customer_id", "customer_name", "unread_count", "last_message", "status", "last_message_at", "created_at"],
+  reseller_customer_chat_messages: ["id", "session_id", "sender_id", "sender_role", "message", "is_read", "image_url", "created_at"],
   reseller_product_selection: ["id", "reseller_id", "product_id", "created_at"],
   ach_customers: ["id", "user_id", "routing_number", "account_number", "account_type", "created_at"],
   ach_financials: ["id", "transaction_id", "amount", "status", "created_at"],
   virtual_customer_profiles: ["id", "config", "created_at"],
   virtual_profiles: ["id", "config", "created_at"],
-  seasonal_themes: ["id", "name", "status", "config", "created_at"],
-  reseller_notifications: ["id", "reseller_id", "title", "message", "read", "created_at"]
+  seasonal_themes: ["id", "name", "status", "config", "created_at"]
 };
 
 function packMetadata(data: any, tableName: string): any {
@@ -591,8 +591,10 @@ async function testAdminConnection() {
 }
 testAdminConnection();
 
+export const app = express();
+export let performShopifySync: () => Promise<void>;
+
 async function startServer() {
-  const app = express();
   const PORT = 3000;
   
   // Canonical domain redirect (Optional but recommended for SEO/Trust)
@@ -1579,8 +1581,8 @@ async function startServer() {
       // Save admin reply to Firestore
       await adminDb.collection('reseller_chat_messages').add({
         session_id: sessionId,
-        sender: "admin",
         sender_role: "admin",
+        sender_id: "admin",
         message: text,
         is_read: false,
         created_at: new Date().toISOString()
@@ -1833,7 +1835,7 @@ async function startServer() {
   let currentCategoryIndex = 0;
   const SYNC_CATEGORIES = ["Gadgets", "Clothing", "Accessories", "Furniture", "Watches", "Kitchen Utensils"];
 
-  async function performShopifySync() {
+  performShopifySync = async function() {
     const clientId = process.env.SHOPIFY_CLIENT_ID;
     const clientSecret = process.env.SHOPIFY_CLIENT_SECRET;
 
@@ -1976,10 +1978,6 @@ async function startServer() {
 
   // Set up periodic sync (every 5 minutes)
   const SYNC_INTERVAL = 5 * 60 * 1000; // 5 minutes in milliseconds
-  setInterval(performShopifySync, SYNC_INTERVAL);
-  
-  // Initial sync after server start (delayed to ensure everything is ready)
-  setTimeout(performShopifySync, 10000); // 10 seconds after startup for faster testing
 
   app.get("/api/shopify/sync-status", async (req, res) => {
     try {
@@ -2020,6 +2018,43 @@ async function startServer() {
       return res.sendFile(swPath);
     }
     next();
+  });
+
+  app.get("/api/validate-referral/:code", async (req, res) => {
+    const { code } = req.params;
+    if (!code) return res.status(400).json({ error: "Code is required" });
+    const normalizedCode = code.trim().toUpperCase();
+    console.log(`[REFERRAL] Validating code: ${normalizedCode}`);
+    
+    try {
+      const staffSnapshot = await adminDb.collection('sla_staff').where('referral_id', '==', normalizedCode).get();
+      if (!staffSnapshot.empty) {
+        const staffData = staffSnapshot.docs[0].data();
+        const staffId = staffSnapshot.docs[0].id;
+        const adminId = staffData.created_by_admin_id;
+        
+        // Find admin name
+        let adminName = adminId;
+        if (adminId) {
+          const adminSnap = await adminDb.collection('sla_admins').where('account_id', '==', adminId).get();
+          if (!adminSnap.empty) {
+            adminName = adminSnap.docs[0].data().name || adminId;
+          }
+        }
+
+        return res.json({ 
+          valid: true, 
+          staffId, 
+          staffName: staffData.name || staffData.username || "Staff",
+          adminId,
+          adminName
+        });
+      }
+      return res.json({ valid: false });
+    } catch (error) {
+      console.error("[REFERRAL] Validation error:", error);
+      return res.status(500).json({ error: "Internal server error" });
+    }
   });
 
   app.post("/api/register-reseller", async (req, res) => {
@@ -2581,9 +2616,14 @@ async function startServer() {
     });
   }
 
-  app.listen(PORT, "0.0.0.0", () => {
-    console.log(`Server running on http://localhost:${PORT}`);
-  });
+  if (process.env.NETLIFY !== "true" && !process.env.LAMBDA_TASK_ROOT) {
+    setInterval(performShopifySync, SYNC_INTERVAL);
+    setTimeout(performShopifySync, 10000);
+    app.listen(PORT, "0.0.0.0", () => {
+      console.log(`Server running on http://localhost:${PORT}`);
+    });
+  }
 }
 
+export { startServer };
 startServer();

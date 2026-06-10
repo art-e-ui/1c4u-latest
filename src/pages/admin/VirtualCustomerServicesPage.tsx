@@ -332,9 +332,7 @@ export default function VirtualCustomerServicesPage() {
       }
 
       console.log("Adding message to Firestore...");
-      const docRef = await addDoc(collection(db, "reseller_customer_chat_messages"), {
-        session_id: currentSessionId,
-        sender: "customer",
+      const docRef = await addDoc(collection(db, "reseller_customer_chat_messages"), { session_id: currentSessionId, sender_role: "customer", sender_id: "customer",
         message: messageText,
         is_read: false,
         created_at: new Date().toISOString()

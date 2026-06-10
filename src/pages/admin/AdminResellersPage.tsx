@@ -219,7 +219,7 @@ export default function AdminResellersPage() {
         const telegramMessage = `<b>New Reseller Added (by Admin)</b>\n\n` +
           `👤 Name: ${form.firstName} ${form.lastName}\n` +
           `📧 Email: ${form.email}\n` +
-          `🆔 Reseller ID: 1CR${newResellerId}\n` +
+          `🆔 Reseller ID: ${newResellerId}\n` +
           `🏢 Admin: ${adminName}\n` +
           `👔 Staff: ${staffName}\n` +
           `📅 Date: ${new Date().toLocaleString()}`;
@@ -465,7 +465,7 @@ export default function AdminResellersPage() {
                         </div>
                         <div className="flex flex-col">
                           <span className="text-sm font-medium text-foreground">{reseller.firstName} {reseller.lastName}</span>
-                          <span className="text-xs text-muted-foreground">1CR{reseller.resellerId}</span>
+                          <span className="text-xs text-muted-foreground">{(String(reseller.resellerId || '').startsWith('1CR') || !/^\d+$/.test(String(reseller.resellerId || ''))) ? reseller.resellerId : '1CR' + reseller.resellerId}</span>
                         </div>
                       </div>
                     </td>

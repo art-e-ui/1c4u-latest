@@ -119,7 +119,7 @@ export function useResellerChat(sessionId: string | null) {
     try {
       await addDoc(collection(db, 'reseller_customer_chat_messages'), {
         session_id: sessionId,
-        sender,
+        sender_role: sender, sender_id: sender,
         message: message.trim(),
         is_read: false,
         created_at: new Date().toISOString()

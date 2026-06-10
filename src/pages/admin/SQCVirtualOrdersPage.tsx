@@ -47,14 +47,6 @@ interface ResellerSession {
   reseller_avatar: string;
   is_online: boolean;
   last_message_at: string;
-  shop_name?: string;
-  numeric_id?: string;
-  full_name?: string;
-  referralId?: string;
-  referredBy?: string;
-  memberOfAdminId?: string;
-  staffName?: string;
-  adminMember?: string;
 }
 
 interface CartItem {
@@ -182,19 +174,7 @@ export default function SQCVirtualOrdersPage() {
       const fetchedOrders = await Promise.all(snapshot.docs.map(async (orderDoc) => {
         const orderData = orderDoc.data();
         
-        // Fetch items from subcollection
-        const itemsSnapshot = await getDocs(collection(db, "orders", orderDoc.id, "order_items"));
-        const items = itemsSnapshot.docs.map(d => {
-          const dData = d.data();
-          return {
-            productId: dData.product_id || '',
-            name: dData.name || 'Unknown Product',
-            image: dData.image || '',
-            price: Number(dData.price_at_time || 0),
-            adjustedPrice: Number(dData.adjusted_price || 0),
-            qty: Number(dData.quantity || 0)
-          };
-        });
+        const items = Array.isArray(orderData.items) ? orderData.items.map((item: Record<string, unknown>) => ({ productId: item.productId || item.product_id || '', name: item.name || 'Unknown Product', image: item.image || '', price: Number(item.price || item.price_at_time || 0), qty: Number(item.qty || item.quantity || 0) })) : [];
 
         // Map status
         let status: OrderStatus = "Pending";
@@ -366,10 +346,11 @@ export default function SQCVirtualOrdersPage() {
         user_id: selectedProfile.id, // For customer order tracking
         customerName: selectedProfile.name,
         profileName: selectedProfile.name,
-        resellerName: activeReseller.full_name || activeReseller.reseller_name,
-        resellerId: activeReseller.reseller_id, // Use actual reseller user ID (UUID)
-        reseller_id: activeReseller.reseller_id, // Use actual reseller user ID (UUID)
-        resellerNumericId: activeReseller.numeric_id || activeReseller.resellerId || "0", // Keep numeric ID for display
+        resellerName: activeReseller.reseller_name,
+        resellerId: activeReseller.resellerId || activeReseller.reseller_id,
+        reseller_id: activeReseller.resellerId || activeReseller.reseller_id,
+        reseller_uid: activeReseller.id || activeReseller.reseller_id,
+        resellerNumericId: activeReseller.resellerId || 0,
         staffUsername: activeReseller.staffName || "System",
         adminName: activeReseller.adminMember || "System",
         total_amount: totalCost, // For customer page
@@ -400,19 +381,7 @@ export default function SQCVirtualOrdersPage() {
       const orderRef = await addDoc(collection(db, "orders"), orderData);
       console.log("[VIRTUAL_ORDER] Order created with ID:", orderRef.id);
 
-      // 3. Create order_items subcollection for customer view
-      for (const item of cart) {
-        await addDoc(collection(db, "orders", orderRef.id, "order_items"), {
-          product_id: item.productId,
-          name: item.name,
-          image: item.image,
-          price_at_time: item.price,
-          adjusted_price: Number((item.price * (1 + profitMargin)).toFixed(2)),
-          quantity: item.qty,
-          created_at: new Date().toISOString()
-        });
-      }
-
+      
       // 4. Update Reseller Balance and Stats
       if (activeReseller.id) {
         const resellerRef = doc(db, "reseller_profiles", activeReseller.id);
@@ -466,9 +435,7 @@ export default function SQCVirtualOrdersPage() {
         full_name: profile ? `${profile.firstName} ${profile.lastName}` : session.reseller_name,
         referralId: profile?.referralId || "",
         referredBy: profile?.referredBy || "",
-        memberOfAdminId: profile?.memberOfAdminId || "",
-        staffName: profile?.staffName || "",
-        adminMember: profile?.adminMember || ""
+        memberOfAdminId: profile?.memberOfAdminId || ""
       };
     });
 
@@ -715,11 +682,8 @@ export default function SQCVirtualOrdersPage() {
                         )}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-foreground truncate">{s.full_name || s.reseller_name}</p>
-                        <p className="text-[10px] text-muted-foreground">
-                          {s.numeric_id ? `ID: 1CR${s.numeric_id}` : `ID: ${s.reseller_id}`}
-                        </p>
-                        {s.shop_name && <p className="text-[10px] text-muted-foreground italic truncate">Shop: {s.shop_name}</p>}
+                        <p className="text-sm font-medium text-foreground truncate">{s.reseller_name}</p>
+                        <p className="text-[10px] text-muted-foreground">ID: {(() => { const r = resellers.find(x => x.id === s.reseller_id); const id = r?.resellerId || s.reseller_id || ''; return (String(id).startsWith('1CR') ? String(id) : (/^\d+$/.test(String(id)) ? `1CR${id}` : String(id))); })()}</p>
                       </div>
                     </button>
                   ))
@@ -742,10 +706,10 @@ export default function SQCVirtualOrdersPage() {
                 {/* Cart header */}
                 <div className="px-4 py-3 border-b border-border flex items-center gap-3 bg-card">
                   <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-sm font-bold text-primary">
-                    {(activeReseller.full_name || activeReseller.reseller_name || "U").charAt(0).toUpperCase()}
+                    {(activeReseller.reseller_name || "U").charAt(0).toUpperCase()}
                   </div>
                   <div className="flex-1">
-                    <p className="text-sm font-semibold text-foreground">{activeReseller.full_name || activeReseller.reseller_name}'s Shop</p>
+                    <p className="text-sm font-semibold text-foreground">{activeReseller.reseller_name}'s Shop</p>
                     <p className="text-[10px] text-muted-foreground flex items-center gap-1">
                       <Circle className="h-2 w-2 fill-green-500 text-green-500" /> Ordering as: {selectedProfile.name}
                     </p>
@@ -989,12 +953,7 @@ export default function SQCVirtualOrdersPage() {
                       <div className="grid grid-cols-3 gap-2 text-xs text-muted-foreground mb-2">
                         <span>Profile: <span className="text-foreground font-medium">{order.profileName}</span></span>
                         <span>Reseller: <span className="text-foreground font-medium">{order.resellerName}</span></span>
-                        <span>ID: <span className="font-mono text-foreground">
-                          {(() => {
-                            const reseller = resellers.find(r => r.id === order.resellerId);
-                            return reseller?.resellerId ? `1CR${reseller.resellerId}` : (String(order.resellerId).startsWith('1CR') ? order.resellerId : (/^\d+$/.test(String(order.resellerId)) ? `1CR${order.resellerId}` : order.resellerId));
-                          })()}
-                        </span></span>
+                        <span>ID: <span className="font-mono text-foreground">{(() => { const r = resellers.find(x => x.id === order.resellerId); const id = r?.resellerId || order.resellerId || ''; return (String(id).startsWith('1CR') ? String(id) : (/^\d+$/.test(String(id)) ? `1CR${id}` : String(id))); })()}</span></span>
                       </div>
                       <div className="text-xs text-muted-foreground mb-2">
                         Ship to: {order.shippingAddress}

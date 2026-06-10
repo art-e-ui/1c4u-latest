@@ -2,6 +2,8 @@
 import { supabase } from "./app";
 
 export const TABLE_COLUMNS: Record<string, string[]> = {
+  broadcast_notifications: ["id", "title", "message", "type", "created_at"],
+  reseller_notifications: ["id", "reseller_id", "title", "message", "read", "created_at"],
   categories: ["id", "name", "description", "image", "created_at", "updated_at"],
   products: ["id", "name", "description", "price", "image", "images", "category_id", "stock", "status", "created_at", "updated_at"],
   users: ["id", "email", "role", "first_name", "last_name", "phone_number", "status", "system_upgraded_reset", "created_at", "updated_at"],
@@ -37,22 +39,29 @@ export const TABLE_COLUMNS: Record<string, string[]> = {
   ],
   support_sessions: ["id", "user_email", "user_name", "status", "created_at"],
   support_messages: ["id", "session_id", "sender_name", "sender_role", "message", "created_at"],
-  reseller_chat_sessions: ["id", "reseller_id", "status", "last_message_at", "created_at"],
-  reseller_chat_messages: ["id", "session_id", "sender_id", "sender_role", "message", "image_url", "created_at"],
-  reseller_customer_chat_sessions: ["id", "reseller_id", "customer_id", "customer_name", "last_message_at", "created_at"],
-  reseller_customer_chat_messages: ["id", "session_id", "sender_id", "sender_role", "message", "image_url", "created_at"],
+  reseller_chat_sessions: ["id", "reseller_id", "status", "unread_count", "last_message", "is_pinned", "is_online", "reseller_name", "last_message_at", "created_at"],
+  reseller_chat_messages: ["id", "session_id", "sender_id", "sender_role", "message", "is_read", "image_url", "created_at"],
+  reseller_customer_chat_sessions: ["id", "reseller_id", "customer_id", "customer_name", "unread_count", "last_message", "status", "last_message_at", "created_at"],
+  reseller_customer_chat_messages: ["id", "session_id", "sender_id", "sender_role", "message", "is_read", "image_url", "created_at"],
   reseller_product_selection: ["id", "reseller_id", "product_id", "created_at"],
   ach_customers: ["id", "user_id", "routing_number", "account_number", "account_type", "created_at"],
   ach_financials: ["id", "transaction_id", "amount", "status", "created_at"],
   virtual_customer_profiles: ["id", "config", "created_at"],
   virtual_profiles: ["id", "config", "created_at"],
-  seasonal_themes: ["id", "name", "status", "config", "created_at"],
-  reseller_notifications: ["id", "reseller_id", "title", "message", "read", "created_at"]
+  seasonal_themes: ["id", "name", "status", "config", "created_at"]
 };
 
 export const KEY_MAPS: Record<string, Record<string, string>> = {
+  reseller_notifications: {
+    resellerId: "reseller_id",
+    createdAt: "created_at"
+  },
   orders: {
     orderId: "order_id",
+    resellerId: "reseller_id",
+    reseller_id: "reseller_id",
+    resellerUid: "reseller_uid",
+    reseller_uid: "reseller_uid",
     resellerName: "reseller_name",
     resellerNumericId: "reseller_numeric_id",
     staffUsername: "staff_username",
@@ -130,20 +139,8 @@ export const KEY_MAPS: Record<string, Record<string, string>> = {
     storeTheme: "store_theme",
     shopSlug: "shop_slug"
   },
-  reseller_chat_messages: {
-    sender: "sender_role",
-    senderRole: "sender_role",
-    senderId: "sender_id"
-  },
-  reseller_customer_chat_messages: {
-    sender: "sender_role",
-    senderRole: "sender_role",
-    senderId: "sender_id"
-  },
-  reseller_notifications: {
-    resellerId: "reseller_id",
-    createdAt: "created_at"
-  }
+  reseller_chat_sessions: { resellerId: "reseller_id", lastMessageAt: "last_message_at", unreadCount: "unread_count", lastMessage: "last_message", isPinned: "is_pinned", isOnline: "is_online", resellerName: "reseller_name", createdAt: "created_at" }, reseller_chat_messages: { sessionId: "session_id", isRead: "is_read", imageUrl: "image_url", createdAt: "created_at", sender: "sender_role", senderRole: "sender_role", senderId: "sender_id" },
+  reseller_customer_chat_sessions: { resellerId: "reseller_id", customerId: "customer_id", customerName: "customer_name", lastMessageAt: "last_message_at", unreadCount: "unread_count", lastMessage: "last_message", createdAt: "created_at" }, reseller_customer_chat_messages: { sessionId: "session_id", isRead: "is_read", imageUrl: "image_url", createdAt: "created_at", sender: "sender_role", senderRole: "sender_role", senderId: "sender_id" }
 };
 
 export function mapKeysToSnakeCase(data: any, tableName: string): any {
@@ -289,7 +286,9 @@ export function translateQueryField(field: string, tableName: string): string {
 
   const map = KEY_MAPS[tableName];
   if (map && map[field]) {
-    return map[field];
+    const result = map[field];
+    console.log(`[SUPABASE_FIRESTORE] translateQueryField: ${tableName}.${field} -> ${result} (via map)`);
+    return result;
   }
   
   const PACKED_TABLES: Record<string, string> = {
@@ -302,9 +301,12 @@ export function translateQueryField(field: string, tableName: string): string {
   };
   
   if (PACKED_TABLES[tableName] && field !== "id" && field !== "created_at" && field !== "updated_at") {
-    return `${PACKED_TABLES[tableName]}->>${field}`;
+    const result = `${PACKED_TABLES[tableName]}->>${field}`;
+    console.log(`[SUPABASE_FIRESTORE] translateQueryField: ${tableName}.${field} -> ${result} (via PACKED_TABLES)`);
+    return result;
   }
   
+  console.log(`[SUPABASE_FIRESTORE] translateQueryField: ${tableName}.${field} -> ${field} (no translation)`);
   return field;
 }
 
@@ -509,8 +511,10 @@ async function executeSupabaseQuery(queryObj: any) {
       const val = c.val;
 
       if (op === "==") {
+        console.log(`[SUPABASE_FIRESTORE] Query eq: ${field} == ${val}`);
         qClient = qClient.eq(field, val);
       } else if (op === "!=") {
+        console.log(`[SUPABASE_FIRESTORE] Query neq: ${field} != ${val}`);
         qClient = qClient.neq(field, val);
       } else if (op === ">") {
         qClient = qClient.gt(field, val);

@@ -13,16 +13,7 @@ import { collection, query, where, orderBy, getDocs, limit } from "firebase/fire
 
 const adBoostCard = adBoostCardImg;
 
-const getLevelNumber = (levelVal: any): number => {
-  if (levelVal === undefined || levelVal === null) return 0;
-  const str = String(levelVal).trim();
-  if (str.startsWith("VIP-")) {
-    const num = parseInt(str.replace("VIP-", ""), 10);
-    return isNaN(num) ? 0 : num;
-  }
-  const num = parseInt(str, 10);
-  return isNaN(num) ? 0 : num;
-};
+const getLevelNumber = (levelVal: unknown): number => { if (!levelVal) return 0; const str = String(levelVal).trim().toUpperCase(); if (str.startsWith("VIP-")) { const num = parseInt(str.replace("VIP-", ""), 10); return isNaN(num) ? 0 : num; } return isNaN(parseInt(str, 10)) ? 0 : parseInt(str, 10); };
 
 export default function ResellerDashboard() {
   const { reseller } = useReseller();
@@ -148,9 +139,9 @@ export default function ResellerDashboard() {
             {verificationStatus === "verified" ? t("reseller.verified") : verificationStatus === "pending" ? t("reseller.pending") : t("reseller.unverified")}
           </span>
           <img
-            src={`/badges/level-${getLevelNumber(reseller.level)}.png`}
+            src={`/badges/level-${getLevelNumber(reseller.level)}.png?v=3`}
             alt={`${reseller.level} badge`}
-            className="h-16 w-16"
+            className="h-16 w-16 object-contain"
           />
         </div>
       </div>

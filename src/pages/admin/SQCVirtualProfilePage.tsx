@@ -512,9 +512,7 @@ export default function SQCVirtualProfilePage() {
     if (!extraText) setInput("");
     
     try {
-      await addDoc(collection(db, "reseller_chat_messages"), {
-        session_id: activeSessionId,
-        sender: "admin",
+      await addDoc(collection(db, "reseller_chat_messages"), { session_id: activeSessionId, sender_role: "admin", sender_id: "admin",
         message: `[${selectedProfile.name}]: ${text}`,
         is_read: false,
         created_at: new Date().toISOString()

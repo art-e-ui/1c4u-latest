@@ -53,7 +53,7 @@ export default function ResellerProfilePage() {
     return filtered.map(r => {
       return {
         id: r.id,
-        reseller_id: r.resellerId ? (String(r.resellerId).startsWith('1CR') ? r.resellerId : `1CR${r.resellerId}`) : 'N/A',
+        reseller_id: String(r.resellerId || "").startsWith("1CR") ? r.resellerId : (/^\\d+$/.test(String(r.resellerId || "")) ? `1CR${r.resellerId}` : (r.resellerId || "N/A")),
         referral_code: r.referralId || 'N/A',
         name: r.name,
         email: r.email || 'N/A',
@@ -170,7 +170,7 @@ export default function ResellerProfilePage() {
               ) : (
                 filteredResellers.map((reseller) => (
                   <TableRow key={reseller.id} className="hover:bg-muted/20 transition-colors">
-                    <TableCell className="font-mono text-xs text-primary">{reseller.reseller_id}</TableCell>
+                    <TableCell className="font-mono text-xs text-primary">{(String(reseller.reseller_id || "").startsWith("1CR") || !/^\d+$/.test(String(reseller.reseller_id || ""))) ? reseller.reseller_id : "1CR" + reseller.reseller_id}</TableCell>
                     <TableCell className="font-mono text-xs">{reseller.referral_code}</TableCell>
                     <TableCell className="text-xs">{reseller.referredBy}</TableCell>
                     <TableCell className="text-xs">{reseller.adminMember}</TableCell>

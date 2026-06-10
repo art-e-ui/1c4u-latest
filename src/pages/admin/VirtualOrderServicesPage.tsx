@@ -250,19 +250,7 @@ export default function VirtualOrderServicesPage() {
         })
       }).catch(err => console.error("[FCM] Failed to send push notification:", err));
 
-      // 3. Create order_items subcollection
-      for (const item of cart) {
-        await addDoc(collection(db, "orders", orderRef.id, "order_items"), {
-          product_id: item.id,
-          name: item.name,
-          price_at_time: item.price,
-          adjusted_price: Number((item.price * (1 + profitMargin)).toFixed(2)),
-          quantity: item.quantity,
-          image: item.image,
-          created_at: new Date().toISOString()
-        });
-      }
-
+      
       // 4. Update Reseller Balance and Stats
       const resellerRef = doc(db, "reseller_profiles", selectedReseller.id);
       const currentUnpicked = Number(resellerData?.unpicked_balance || 0);
@@ -378,7 +366,6 @@ export default function VirtualOrderServicesPage() {
                   <div className="flex-1 min-w-0">
                     <div className="font-medium truncate">{reseller.firstName} {reseller.lastName}</div>
                     <div className="text-[10px] opacity-70 truncate">{reseller.shopName || "No Shop Name"}</div>
-                    <div className="text-[10px] text-muted-foreground">ID: 1CR{reseller.resellerId}</div>
                     <div className={cn(
                       "text-[10px] font-medium mt-0.5",
                       isOnline ? "text-emerald-600" : "text-muted-foreground"

@@ -30,31 +30,31 @@ export default function BroadcastNewsPage() {
   const [showArchived, setShowArchived] = useState(false);
 
   // Form state
-  const [label, setLabel] = useState("");
+  const [title, setLabel] = useState("");
   const [message, setMessage] = useState("");
-  const [department, setDepartment] = useState("");
+  const [type, setDepartment] = useState("");
 
   const { data: notifications = [], isLoading } = useQuery({
     queryKey: ["broadcast_notifications", showArchived],
     queryFn: async () => {
       const q = query(
         collection(db, "broadcast_notifications"),
-        where("is_archived", "==", showArchived),
-        orderBy("broadcast_date", "desc")
+        
+        orderBy("created_at", "desc")
       );
       const snapshot = await getDocs(q);
-      return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as { id: string; label: string; message: string; department: string; is_archived: boolean; broadcast_date: string }));
+      return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as { id: string; title: string; message: string; type: string; read: boolean; created_at: string }));
     },
   });
 
   const createMutation = useMutation({
     mutationFn: async () => {
       await addDoc(collection(db, "broadcast_notifications"), {
-        label,
+        title,
         message,
-        department,
-        is_archived: false,
-        broadcast_date: new Date().toISOString()
+        type,
+        read: false,
+        created_at: new Date().toISOString()
       });
     },
     onSuccess: () => {
@@ -74,7 +74,7 @@ export default function BroadcastNewsPage() {
   const archiveMutation = useMutation({
     mutationFn: async (id: string) => {
       await updateDoc(doc(db, "broadcast_notifications", id), {
-        is_archived: true
+        read: true
       });
     },
     onSuccess: () => {
@@ -84,7 +84,7 @@ export default function BroadcastNewsPage() {
   });
 
   const handleSubmit = () => {
-    if (!label.trim() || !message.trim() || !department) {
+    if (!title.trim() || !message.trim() || !type) {
       toast({ title: "Please fill all fields", variant: "destructive" });
       return;
     }
@@ -150,7 +150,7 @@ export default function BroadcastNewsPage() {
                     {String(idx + 1).padStart(3, "0")}
                   </TableCell>
                   <TableCell className="text-sm">
-                    {new Date(n.broadcast_date).toLocaleDateString("en-US", {
+                    {new Date(n.created_at).toLocaleDateString("en-US", {
                       year: "numeric",
                       month: "short",
                       day: "numeric",
@@ -158,13 +158,13 @@ export default function BroadcastNewsPage() {
                       minute: "2-digit",
                     })}
                   </TableCell>
-                  <TableCell className="font-medium text-sm">{n.label}</TableCell>
+                  <TableCell className="font-medium text-sm">{n.title}</TableCell>
                   <TableCell className="text-sm text-muted-foreground max-w-[300px] truncate">
                     {n.message}
                   </TableCell>
                   <TableCell>
                     <Badge variant="secondary" className="text-xs">
-                      {n.department}
+                      {n.type}
                     </Badge>
                   </TableCell>
                   {!showArchived && (
@@ -196,11 +196,11 @@ export default function BroadcastNewsPage() {
           <div className="flex-1 space-y-5 py-4 overflow-y-auto">
             {/* Header */}
             <div className="space-y-2">
-              <Label htmlFor="notif-label">Notification Header</Label>
+              <Label htmlFor="notif-title">Notification Header</Label>
               <Input
-                id="notif-label"
+                id="notif-title"
                 placeholder="e.g. Scheduled Maintenance Notice"
-                value={label}
+                value={title}
                 onChange={(e) => setLabel(e.target.value)}
               />
             </div>
@@ -220,9 +220,9 @@ export default function BroadcastNewsPage() {
             {/* Footer */}
             <div className="space-y-3 rounded-lg border border-border p-4 bg-muted/30">
               <p className="text-sm font-medium text-foreground">Released By</p>
-              <Select value={department} onValueChange={setDepartment}>
+              <Select value={type} onValueChange={setDepartment}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Select department" />
+                  <SelectValue placeholder="Select type" />
                 </SelectTrigger>
                 <SelectContent>
                   {DEPARTMENTS.map((d) => (
@@ -232,9 +232,9 @@ export default function BroadcastNewsPage() {
                   ))}
                 </SelectContent>
               </Select>
-              {department && (
+              {type && (
                 <p className="text-xs text-muted-foreground">
-                  {department}@1-cartforu.com
+                  {type}@1-cartforu.com
                 </p>
               )}
             </div>

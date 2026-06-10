@@ -76,8 +76,8 @@ export default function AdminOrdersPage() {
       );
       return {
         ...o,
-        resellerId: reseller ? `1CR${reseller.resellerId}` : (String(o.resellerId).startsWith('1CR') ? o.resellerId : (/^\d+$/.test(String(o.resellerId)) ? `1CR${o.resellerId}` : o.resellerId)),
-        resellerName: reseller ? `${reseller.firstName} ${reseller.lastName}` : (o.resellerName || "N/A"),
+        resellerId: reseller ? (String(reseller.resellerId || "").startsWith("1CR") ? String(reseller.resellerId) : (/^\d+$/.test(String(reseller.resellerId || "")) ? `1CR${reseller.resellerId}` : String(reseller.resellerId))) : o.resellerId,
+        resellerName: reseller ? `${reseller.firstName} ${reseller.lastName}` : o.resellerName || "N/A",
         shopName: reseller?.shopName || ""
       };
     });

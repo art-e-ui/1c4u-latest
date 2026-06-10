@@ -5,7 +5,7 @@ import { db } from "@/lib/firebase";
 import { doc, updateDoc } from "firebase/firestore";
 import { useTranslation } from "react-i18next";
 
-const getLevelNumber = (levelVal: any): number => {
+const getLevelNumber = (levelVal: unknown): number => {
   if (levelVal === undefined || levelVal === null) return 0;
   const str = String(levelVal).trim();
   if (str.startsWith("VIP-")) {
@@ -80,9 +80,9 @@ export default function ResellerProfile() {
             {verificationStatus === "verified" ? t("reseller.verified") : verificationStatus === "pending" ? t("reseller.pending") : t("reseller.unverified")}
           </span>
           <img
-            src={`/badges/level-${getLevelNumber(reseller.level)}.png`}
+            src={`/badges/level-${getLevelNumber(reseller.level)}.png?v=3`}
             alt={`${reseller.level} badge`}
-            className="h-16 w-16"
+            className="h-16 w-16 object-contain"
           />
         </div>
       </div>
