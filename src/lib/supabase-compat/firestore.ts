@@ -37,8 +37,8 @@ export const TABLE_COLUMNS: Record<string, string[]> = {
     "account_number", "account_name", "created_at", "updated_at", "reseller_name", 
     "payment_method", "usdt_address", "bank_info", "referral_id", "member_of_admin_id"
   ],
-  support_sessions: ["id", "user_email", "user_name", "status", "created_at"],
-  support_messages: ["id", "session_id", "sender_name", "sender_role", "message", "created_at"],
+  support_sessions: ["id", "user_email", "user_name", "status", "created_at", "customer_name", "is_online", "last_message_at", "reseller_id", "user_id"],
+  support_messages: ["id", "session_id", "sender_name", "sender_role", "message", "created_at", "sender", "is_read", "attachment_product_id"],
   reseller_chat_sessions: ["id", "reseller_id", "status", "unread_count", "last_message", "is_pinned", "is_online", "reseller_name", "last_message_at", "created_at"],
   reseller_chat_messages: ["id", "session_id", "sender_id", "sender_role", "message", "is_read", "image_url", "created_at"],
   reseller_customer_chat_sessions: ["id", "reseller_id", "customer_id", "customer_name", "unread_count", "last_message", "status", "last_message_at", "created_at"],
@@ -140,7 +140,9 @@ export const KEY_MAPS: Record<string, Record<string, string>> = {
     shopSlug: "shop_slug"
   },
   reseller_chat_sessions: { resellerId: "reseller_id", lastMessageAt: "last_message_at", unreadCount: "unread_count", lastMessage: "last_message", isPinned: "is_pinned", isOnline: "is_online", resellerName: "reseller_name", createdAt: "created_at" }, reseller_chat_messages: { sessionId: "session_id", isRead: "is_read", imageUrl: "image_url", createdAt: "created_at", sender: "sender_role", senderRole: "sender_role", senderId: "sender_id" },
-  reseller_customer_chat_sessions: { resellerId: "reseller_id", customerId: "customer_id", customerName: "customer_name", lastMessageAt: "last_message_at", unreadCount: "unread_count", lastMessage: "last_message", createdAt: "created_at" }, reseller_customer_chat_messages: { sessionId: "session_id", isRead: "is_read", imageUrl: "image_url", createdAt: "created_at", sender: "sender_role", senderRole: "sender_role", senderId: "sender_id" }
+  reseller_customer_chat_sessions: { resellerId: "reseller_id", customerId: "customer_id", customerName: "customer_name", lastMessageAt: "last_message_at", unreadCount: "unread_count", lastMessage: "last_message", createdAt: "created_at" }, reseller_customer_chat_messages: { sessionId: "session_id", isRead: "is_read", imageUrl: "image_url", createdAt: "created_at", sender: "sender_role", senderRole: "sender_role", senderId: "sender_id" },
+  support_sessions: { customerName: "customer_name", isOnline: "is_online", lastMessageAt: "last_message_at", resellerId: "reseller_id", userId: "user_id", userEmail: "user_email", userName: "user_name" },
+  support_messages: { sessionId: "session_id", senderName: "sender_name", senderRole: "sender_role", createdAt: "created_at", isRead: "is_read", attachmentProductId: "attachment_product_id" }
 };
 
 export function mapKeysToSnakeCase(data: any, tableName: string): any {
