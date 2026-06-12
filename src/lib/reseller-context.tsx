@@ -147,10 +147,10 @@ export function ResellerProvider({ children }: { children: React.ReactNode }) {
               if (!prev) return null;
               return {
                 ...prev,
-                starRating: shopData.star_rating || 2.0,
-                creditScore: shopData.credit_score || 100,
-                level: shopData.level || prev.level || "VIP-0",
-                productLimit: shopData.product_limit || 20,
+                starRating: shopData.starRating || shopData.star_rating || 2.0,
+                creditScore: shopData.creditScore || shopData.credit_score || 100,
+                level: shopData.vipLevel || shopData.level || prev.level || "VIP-0",
+                productLimit: shopData.productsLimit || shopData.productLimit || shopData.product_limit || 20,
               };
             });
           }
@@ -302,7 +302,7 @@ export function ResellerProvider({ children }: { children: React.ReactNode }) {
       const totalDeposits = Number(profileData.total_deposits || 0);
       const totalWithdrawals = Number(profileData.total_withdrawals || 0);
       const netDeposits = totalDeposits - totalWithdrawals;
-      const currentLevelLabel = (retailShopData?.level as string) || "VIP-0";
+      const currentLevelLabel = (retailShopData?.vipLevel || retailShopData?.level as string) || "VIP-0";
       const levelInfo = getLevelByDeposit(netDeposits, currentLevelLabel);
 
       // 3. Fetch selected products
@@ -341,8 +341,8 @@ export function ResellerProvider({ children }: { children: React.ReactNode }) {
         memberOfAdminId: profileData.member_of_admin_id,
         level: levelInfo.level,
         productLimit: levelInfo.productLimit,
-        starRating: retailShopData?.star_rating || 2.0,
-        creditScore: retailShopData?.credit_score || 100,
+        starRating: retailShopData?.starRating || retailShopData?.star_rating || 2.0,
+        creditScore: retailShopData?.creditScore || retailShopData?.credit_score || 100,
         selectedProductIds,
         usdtAddress: profileData.usdt_address || '',
         bankInfo: profileData.bank_info || { bankName: '', accountName: '', accountNumber: '' },
@@ -820,10 +820,10 @@ export function ResellerProvider({ children }: { children: React.ReactNode }) {
         shopLogo: data.shop_logo || data.shopLogo || '',
         shopHeroBanner: data.shop_hero_banner || data.shopHeroBanner || '',
         storeTheme: (data.store_theme || data.storeTheme || 'minimal') as StoreTheme,
-        starRating: data.star_rating || data.starRating || 2.0,
-        creditScore: data.credit_score || data.creditScore || 100,
-        level: data.level || "VIP-0",
-        productLimit: data.product_limit || data.productLimit || 20,
+        starRating: data.starRating || data.star_rating || 2.0,
+        creditScore: data.creditScore || data.credit_score || 100,
+        level: data.vipLevel || data.level || "VIP-0",
+        productLimit: data.productsLimit || data.productLimit || data.product_limit || 20,
         selectedProductIds,
         verified: true, // If they have a shop, we consider them active
       } as ResellerProfile;
