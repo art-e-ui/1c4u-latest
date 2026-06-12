@@ -319,13 +319,13 @@ export default function SQCVirtualProfilePage() {
     if (r.reseller_name === "Ahmad Fauzi" || r.reseller_name === "Maria Santos") return false;
     if (!resellerSearch) return true;
     const q = resellerSearch.toLowerCase();
-    return r.reseller_name.toLowerCase().includes(q) || r.reseller_id.toLowerCase().includes(q);
+    return (r.reseller_name || "").toLowerCase().includes(q) || (r.reseller_id || "").toLowerCase().includes(q);
   });
 
   const filteredProducts = products.filter((p) => {
     if (!productSearch) return true;
     const q = productSearch.toLowerCase();
-    return p.name.toLowerCase().includes(q) || p.id.toLowerCase().includes(q);
+    return (p.name || "").toLowerCase().includes(q) || (p.id || "").toLowerCase().includes(q);
   });
 
   // Fetch profiles
@@ -545,20 +545,20 @@ export default function SQCVirtualProfilePage() {
 
   const filteredProfiles = profiles.filter(
     (p) =>
-      p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      p.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      p.region.toLowerCase().includes(searchQuery.toLowerCase())
+      (p.name || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (p.email || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (p.region || "").toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const filteredSessions = enrichedSessions
     .filter((s) => {
       if (!sessionSearch) return true;
       const q = sessionSearch.toLowerCase();
-      return s.reseller_name.toLowerCase().includes(q) || 
-             s.reseller_id.toLowerCase().includes(q) ||
-             s.shop_name.toLowerCase().includes(q) ||
-             s.numeric_id.toLowerCase().includes(q) ||
-             s.full_name.toLowerCase().includes(q);
+      return (s.reseller_name || "").toLowerCase().includes(q) || 
+             (s.reseller_id || "").toLowerCase().includes(q) ||
+             (s.shop_name || "").toLowerCase().includes(q) ||
+             String(s.numeric_id || "").toLowerCase().includes(q) ||
+             (s.full_name || "").toLowerCase().includes(q);
     })
     .sort((a, b) => {
       if (a.is_pinned && !b.is_pinned) return -1;

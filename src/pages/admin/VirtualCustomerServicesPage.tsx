@@ -84,11 +84,11 @@ export default function VirtualCustomerServicesPage() {
     if (resellerSearch.trim()) {
       const q = resellerSearch.toLowerCase();
       list = list.filter(r => 
-        r.firstName.toLowerCase().includes(q) || 
-        r.lastName.toLowerCase().includes(q) || 
-        r.shopName.toLowerCase().includes(q) ||
-        r.id.toLowerCase().includes(q) ||
-        r.resellerId.toString().includes(q)
+        (r.firstName || "").toLowerCase().includes(q) || 
+        (r.lastName || "").toLowerCase().includes(q) || 
+        (r.shopName || "").toLowerCase().includes(q) ||
+        (r.id || "").toLowerCase().includes(q) ||
+        (r.resellerId || "").toString().includes(q)
       );
     }
     return list;
@@ -182,9 +182,9 @@ export default function VirtualCustomerServicesPage() {
     if (!productSearch.trim()) return products;
     const q = productSearch.toLowerCase();
     return products.filter(p => 
-      p.name.toLowerCase().includes(q) || 
-      p.sku.toLowerCase().includes(q) ||
-      p.category.toLowerCase().includes(q)
+      (p.name || "").toLowerCase().includes(q) || 
+      (p.sku || "").toLowerCase().includes(q) ||
+      (p.category || "").toLowerCase().includes(q)
     );
   }, [dbProducts, selectedProductIds, productSearch]);
 

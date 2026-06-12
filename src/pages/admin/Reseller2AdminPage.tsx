@@ -183,7 +183,7 @@ export default function Reseller2AdminPage() {
   const filteredProducts = products.filter((p) => {
     if (!productSearch) return true;
     const q = productSearch.toLowerCase();
-    return p.name.toLowerCase().includes(q) || p.id.toLowerCase().includes(q);
+    return (p.name || "").toLowerCase().includes(q) || (p.id || "").toLowerCase().includes(q);
   });
 
   useEffect(() => {
@@ -408,9 +408,9 @@ export default function Reseller2AdminPage() {
     .filter((s) => {
       if (!search) return true;
       const q = search.toLowerCase();
-      return s.reseller_name.toLowerCase().includes(q) || 
-             s.reseller_id.toLowerCase().includes(q) ||
-             (s.formattedId && s.formattedId.toLowerCase().includes(q));
+      return (s.reseller_name || "").toLowerCase().includes(q) || 
+             (s.reseller_id || "").toLowerCase().includes(q) ||
+             (s.formattedId && String(s.formattedId).toLowerCase().includes(q));
     })
     .sort((a, b) => {
       if (a.is_pinned && !b.is_pinned) return -1;
