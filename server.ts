@@ -1841,7 +1841,7 @@ async function startServer() {
 
   // Periodic Sync Function with Category Rotation
   let currentCategoryIndex = 0;
-  const SYNC_CATEGORIES = ["Gadgets", "Clothing", "Accessories", "Furniture", "Watches", "Kitchen Utensils"];
+  const SYNC_CATEGORIES = ["Gadgets", "Clothing", "Accessories", "Furniture", "Watches", "Kitchen Utensils", "Toys", "Beauty", "Sports Accessories", "Fragrances", "Groceries", "Laptops", "Home Decoration"];
 
   performShopifySync = async function() {
     const clientId = process.env.SHOPIFY_CLIENT_ID;
