@@ -322,11 +322,15 @@ const mockAdminDb = {
         const allowed = TABLE_COLUMNS[tableName] || [];
         const sqlConstraints: any[] = [];
         const memoryConstraints: any[] = [];
+        const descriptionLikeConstraints: any[] = [];
 
         for (const c of constraints) {
           const field = translateQueryField(c.field, tableName);
           if (allowed.includes(field)) {
             sqlConstraints.push(c);
+          } else if (tableName === "products" && (field === "sku" || field === "shopify_id")) {
+            descriptionLikeConstraints.push({ field, val: c.val });
+            memoryConstraints.push(c);
           } else {
             memoryConstraints.push(c);
           }
@@ -342,11 +346,15 @@ const mockAdminDb = {
           else if (c.op === ">=") q = q.gte(field, c.val);
           else if (c.op === "<=") q = q.lte(field, c.val);
         }
+        for (const c of descriptionLikeConstraints) {
+          q = q.like("description", `%\"${c.field}\":\"${c.val}\"%`);
+        }
         if (orderCol && allowed.includes(translateQueryField(orderCol, tableName))) {
           const field = translateQueryField(orderCol, tableName);
           q = q.order(field, { ascending: !orderDesc });
         }
-        if (limitVal !== null && memoryConstraints.length === 0) {
+        const allMemoryFiltersSolvedOnDb = memoryConstraints.length > 0 && descriptionLikeConstraints.length === memoryConstraints.length;
+        if (limitVal !== null && (memoryConstraints.length === 0 || allMemoryFiltersSolvedOnDb)) {
           q = q.limit(limitVal);
         }
         const { data, error } = await q;
@@ -1976,8 +1984,8 @@ async function startServer() {
     }
   }
 
-  // Set up periodic sync (every 5 minutes)
-  const SYNC_INTERVAL = 5 * 60 * 1000; // 5 minutes in milliseconds
+  // Set up periodic sync (every 4 hours)
+  const SYNC_INTERVAL = 4 * 60 * 60 * 1000; // 4 hours in milliseconds
 
   app.get("/api/shopify/sync-status", async (req, res) => {
     try {

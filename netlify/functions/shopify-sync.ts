@@ -17,4 +17,4 @@ const syncHandler = async () => {
   }
 };
 
-export const handler = schedule("0 */12 * * *", syncHandler);
+export const handler = schedule("0 */4 * * *", syncHandler);

@@ -26,7 +26,21 @@ function getTimeLeft(target: Date) {
 export function DealsOfTheDay() {
   const { t } = useTranslation();
   const { products } = useProducts();
-  const deal = products.find((p) => p.badge === "Hot") || products[0];
+  // Deterministically select a deal product based on the calendar date (rotates once every 24 hours)
+  const deal = (() => {
+    if (products.length === 0) return null;
+    const today = new Date();
+    const dateStr = `${today.getFullYear()}-${today.getMonth() + 1}-${today.getDate()}`;
+    let hash = 0;
+    for (let i = 0; i < dateStr.length; i++) {
+      hash = (hash << 5) - hash + dateStr.charCodeAt(i);
+      hash |= 0;
+    }
+    const hotPool = products.filter((p) => p.badge === "Hot" || p.status === "Hot");
+    const selectionPool = hotPool.length > 0 ? hotPool : products;
+    const index = Math.abs(hash) % selectionPool.length;
+    return selectionPool[index];
+  })();
 
   // Set target to end of today
   const [target] = useState(() => {
