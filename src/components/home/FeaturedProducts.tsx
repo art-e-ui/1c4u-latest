@@ -14,16 +14,15 @@ export function FeaturedProducts() {
     .slice(0, 3);
 
   const fashionProduct = products.find((p) => 
-    p.category_slug?.toLowerCase() === "clothing" || 
-    p.category_id === "clothing" ||
-    p.category_slug?.toLowerCase().includes("fashion")
+    p.category?.toLowerCase() === "clothing" || 
+    p.category?.toLowerCase().includes("fashion") ||
+    p.category?.toLowerCase().includes("clothing")
   );
 
   const techProduct = products.find((p) => 
-    p.category_slug?.toLowerCase() === "gadgets" || 
-    p.category_id === "gadgets" || 
-    p.category_slug?.toLowerCase() === "electronics" ||
-    p.category_id === "electronics"
+    p.category?.toLowerCase() === "gadgets" || 
+    p.category?.toLowerCase() === "electronics" ||
+    p.category?.toLowerCase().includes("gadget")
   );
 
   const promoCards = [
