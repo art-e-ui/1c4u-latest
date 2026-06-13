@@ -17,6 +17,7 @@ export interface Product {
   status?: string;
   shopify_id?: string;
   sync_category?: string;
+  createdAt?: string;
 }
 
 export interface Category {

@@ -1614,23 +1614,30 @@ async function startServer() {
   let shopifyToken: { value: string; expires: number } | null = null;
 
   async function getShopifyToken() {
-    let clientId = process.env.SHOPIFY_CLIENT_ID;
-    let clientSecret = process.env.SHOPIFY_CLIENT_SECRET;
+    let clientId = process.env.SHOPIFY_CLIENT_ID || "";
+    let clientSecret = process.env.SHOPIFY_CLIENT_SECRET || "";
+    let storeDomain = process.env.VITE_SHOPIFY_STORE_DOMAIN || "gcos-test-v4.myshopify.com";
+
+    // Clean store domain
+    let cleanDomain = storeDomain.trim().toLowerCase();
+    cleanDomain = cleanDomain.replace(/^(https?:\/\/)?(www\.)?/, '');
+    cleanDomain = cleanDomain.split('/')[0];
+    if (!cleanDomain.includes('.myshopify.com')) {
+      cleanDomain = `${cleanDomain}.myshopify.com`;
+    }
 
     const isPlaceholder = !clientId || clientId.includes("YOUR_") || clientId === "placeholder" || clientId === "127a80974002ad59f3af568dc0c54723";
     const isSecretPlaceholder = !clientSecret || clientSecret.includes("YOUR_") || clientSecret === "placeholder";
 
     if (isPlaceholder || isSecretPlaceholder) {
-      console.log("[SHOPIFY] Missing/placeholder credentials in environment. Using default working coordinates fallback...");
-      clientId = "2591852aff85cc8523566281fb082d1a";
-      clientSecret = "shp" + "ss_27621" + "a7df592a0" + "18fd7f604e40" + "5b047f";
+      throw new Error("Shopify Client ID or Secret not configured in environment.");
     }
 
-    // If the clientId looks like an access token, use it directly
-    // shpat_ (Admin API), shpsc_ (Storefront), shppa_ (Partner)
+    // Direct token check
     const isDirectToken = clientId.startsWith('shpat_') || 
                          clientId.startsWith('shpsc_') || 
-                         clientId.startsWith('shppa_') || 
+                         clientId.startsWith('shppa_') ||
+                         clientId.startsWith('atkn_') ||
                          (clientId.length >= 32 && !clientSecret) ||
                          (clientId.length === 32 && clientSecret === "placeholder");
 
@@ -1647,182 +1654,75 @@ async function startServer() {
       return shopifyToken.value;
     }
 
-    console.log("[SHOPIFY] Fetching new access token via OAuth...");
+    console.log(`[SHOPIFY] Fetching new access token via OAuth for store ${cleanDomain}...`);
     
-    // Try standard Shopify auth endpoints
-    const authEndpoints = [
-      "https://api.shopify.com/auth/access_token",
-      "https://accounts.shopify.com/oauth/token"
-    ];
-
-    let lastError = "";
-
-    for (const endpoint of authEndpoints) {
-      try {
-        console.log(`[SHOPIFY] Attempting auth at: ${endpoint}`);
-        
-        let response;
-        if (endpoint.includes("api.shopify.com/auth/access_token")) {
-          // Send JSON payload as required by api.shopify.com/auth/access_token and shown in dashboard
-          response = await fetch(endpoint, {
-            method: "POST",
-            headers: { 
-              "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-              grant_type: "client_credentials",
-              client_id: clientId,
-              client_secret: clientSecret,
-            }),
-          });
-        } else {
-          // Standard urlencoded basic-auth fallback
-          response = await fetch(endpoint, {
-            method: "POST",
-            headers: { 
-              "Content-Type": "application/x-www-form-urlencoded",
-              "Authorization": `Basic ${Buffer.from(`${clientId}:${clientSecret}`).toString("base64")}`
-            },
-            body: new URLSearchParams({
-              grant_type: "client_credentials",
-              client_id: clientId,
-              client_secret: clientSecret,
-            }).toString(),
-          });
-        }
-
-        const text = await response.text();
-        if (response.ok) {
-          try {
-            const data = JSON.parse(text) as { access_token: string; expires_in?: number };
-            console.log(`[SHOPIFY] Auth Success at ${endpoint}.`);
-            shopifyToken = {
-              value: data.access_token,
-              expires: Date.now() + ((data.expires_in || 7200) * 1000) - 60000,
-            };
-            return shopifyToken.value;
-          } catch (e) {
-            console.error("[SHOPIFY] Failed to parse auth response:", text);
-            lastError = "Invalid JSON response from Shopify";
-          }
-        } else {
-          console.warn(`[SHOPIFY] Auth failed at ${endpoint}:`, text);
-          
-          if (text.includes("application_cannot_be_found")) {
-            lastError = `Shopify could not find an app with Client ID "${clientId}". Please verify your API Key in Shopify Partner Dashboard.`;
-          } else if (text.includes("invalid_client")) {
-            lastError = "Invalid Client ID or Secret. Please check your credentials.";
-          } else {
-            lastError = text;
-          }
-        }
-      } catch (e) {
-        console.error(`[SHOPIFY] Error at ${endpoint}:`, e);
-        lastError = e instanceof Error ? e.message : String(e);
-      }
-    }
-
-    throw new Error(`Shopify Auth Failed: ${lastError}`);
-  }
-
-  // Unified Shopify Product Search (Primary: MCP Tools Call, Fallback: V2 Catalog Search)
-  async function fetchShopifyProducts(token: string, query: string, limit: string | number): Promise<any[]> {
-    const mcpUrl = "https://discover.shopifyapps.com/global/mcp";
-    console.log(`[SHOPIFY] Attempting MCP search at ${mcpUrl} for: "${query}"`);
     try {
-      const response = await fetch(mcpUrl, {
+      const exchangeUrl = `https://${cleanDomain}/admin/oauth/access_token`;
+      const response = await fetch(exchangeUrl, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`
+        headers: { 
+          "Content-Type": "application/json"
         },
         body: JSON.stringify({
-          jsonrpc: "2.0",
-          method: "tools/call",
-          id: 1,
-          params: {
-            name: "search_global_products",
-            arguments: {
-              query: query,
-              context: "currency:USD",
-              limit: Number(limit) || 10
-            }
-          }
-        })
-      });
-
-      if (response.ok) {
-        const text = await response.text();
-        const mcpJson = JSON.parse(text);
-        const content = mcpJson?.result?.content || [];
-        for (const item of content) {
-          if (item.type === "text" && item.text) {
-            const trimmed = item.text.trim();
-            if (trimmed.startsWith("{") || trimmed.startsWith("[")) {
-              try {
-                const parsed = JSON.parse(trimmed);
-                let products = [];
-                if (Array.isArray(parsed)) {
-                  products = parsed;
-                } else if (parsed.offers && Array.isArray(parsed.offers)) {
-                  products = parsed.offers;
-                } else if (parsed.products && Array.isArray(parsed.products)) {
-                  products = parsed.products;
-                } else if (parsed.results && Array.isArray(parsed.results)) {
-                  products = parsed.results;
-                }
-
-                if (products && products.length > 0) {
-                  console.log(`[SHOPIFY] MCP search success. Found ${products.length} products.`);
-                  return products;
-                }
-              } catch (e) {
-                console.warn("[SHOPIFY] Failed to parse internal text content as JSON", e);
-              }
-            } else {
-              console.log("[SHOPIFY] Received non-JSON text from MCP content, skipping parse:", trimmed.slice(0, 100));
-            }
-          }
-        }
-      } else {
-        console.warn(`[SHOPIFY] MCP Search failed with status ${response.status}: ${await response.text()}`);
-      }
-    } catch (err) {
-      console.error("[SHOPIFY] Exception during MCP Search:", err);
-    }
-
-    // Fallback: traditional V2 discover API
-    const catalogId = process.env.SHOPIFY_CATALOG_ID || "01ksvj2mhrj1cd4aww1nr9h744";
-    const searchUrl = `https://discover.shopifyapps.com/global/v2/search/${catalogId}?query=${encodeURIComponent(String(query))}&limit=${limit}`;
-    console.log(`[SHOPIFY] Falling back to traditional catalog search: ${searchUrl}`);
-    
-    try {
-      const response = await fetch(searchUrl, {
-        headers: { Authorization: `Bearer ${token}` },
+          client_id: clientId.trim(),
+          client_secret: clientSecret.trim(),
+          grant_type: "client_credentials",
+        }),
       });
 
       const text = await response.text();
+      if (response.ok) {
+        const data = JSON.parse(text);
+        console.log(`[SHOPIFY] Auth Success at ${exchangeUrl}.`);
+        shopifyToken = {
+          value: data.access_token,
+          expires: Date.now() + ((data.expires_in || 86400) * 1000) - 60000,
+        };
+        return shopifyToken.value;
+      } else {
+        console.error(`[SHOPIFY] Auth failed at ${exchangeUrl}:`, text);
+        throw new Error(text);
+      }
+    } catch (e) {
+      console.error(`[SHOPIFY] Error at auth exchange:`, e);
+      throw e;
+    }
+  }
+
+  // Unified Shopify Product Search
+  async function fetchShopifyProducts(token: string, query: string, limit: string | number): Promise<any[]> {
+    const storeDomain = process.env.VITE_SHOPIFY_STORE_DOMAIN || "gcos-test-v4.myshopify.com";
+    let cleanDomain = storeDomain.trim().toLowerCase();
+    cleanDomain = cleanDomain.replace(/^(https?:\/\/)?(www\.)?/, '');
+    cleanDomain = cleanDomain.split('/')[0];
+    if (!cleanDomain.includes('.myshopify.com')) {
+      cleanDomain = `${cleanDomain}.myshopify.com`;
+    }
+
+    let restUrl = `https://${cleanDomain}/admin/api/2024-01/products.json?limit=${limit}`;
+    if (query && String(query).trim()) {
+      restUrl += `&title=${encodeURIComponent(String(query).trim())}`;
+    }
+
+    console.log(`[SHOPIFY] Fetching products from REST URL: ${restUrl}`);
+    try {
+      const response = await fetch(restUrl, {
+        headers: {
+          'X-Shopify-Access-Token': token,
+          'Content-Type': 'application/json',
+        }
+      });
+
       if (!response.ok) {
-        console.error(`[SHOPIFY] Fallback Search Failed (${response.status}):`, text.slice(0, 500));
+        const text = await response.text();
+        console.error(`[SHOPIFY] REST Search Failed (${response.status}):`, text.slice(0, 500));
         throw new Error(`Shopify Search Failed: ${text.slice(0, 100)}`);
       }
 
-      const data = JSON.parse(text);
-      let products = [];
-      if (Array.isArray(data)) {
-        products = data;
-      } else if (data.products && Array.isArray(data.products)) {
-        products = data.products;
-      } else if (data.results && Array.isArray(data.results)) {
-        products = data.results;
-      } else if (data.data && Array.isArray(data.data)) {
-        products = data.data;
-      }
-
-      console.log(`[SHOPIFY] Traditional search success. Found ${products.length} products.`);
-      return products;
+      const data = await response.json() as any;
+      return data.products || [];
     } catch (err) {
-      console.error("[SHOPIFY] Traditional search exception:", err);
+      console.error("[SHOPIFY] REST search exception:", err);
       throw err;
     }
   }
@@ -1831,7 +1731,46 @@ async function startServer() {
     try {
       const { query: q, limit: l = "10" } = req.query;
       const token = await getShopifyToken();
-      const products = await fetchShopifyProducts(token, String(q), l);
+      
+      const storeDomain = process.env.VITE_SHOPIFY_STORE_DOMAIN || "gcos-test-v4.myshopify.com";
+      let cleanDomain = storeDomain.trim().toLowerCase();
+      cleanDomain = cleanDomain.replace(/^(https?:\/\/)?(www\.)?/, '');
+      cleanDomain = cleanDomain.split('/')[0];
+      if (!cleanDomain.includes('.myshopify.com')) {
+        cleanDomain = `${cleanDomain}.myshopify.com`;
+      }
+
+      let searchUrl = `https://${cleanDomain}/admin/api/2024-01/products.json?limit=${l}`;
+      if (q && String(q).trim()) {
+        searchUrl += `&title=${encodeURIComponent(String(q).trim())}`;
+      }
+
+      console.log(`[SHOPIFY] Searching products in store: ${searchUrl}`);
+      const response = await fetch(searchUrl, {
+        headers: {
+          'X-Shopify-Access-Token': token,
+          'Content-Type': 'application/json',
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error(`Shopify REST API responded with ${response.status}`);
+      }
+
+      const data: any = await response.json();
+      const rawProducts = data.products || [];
+      const products = rawProducts.map((p: any) => {
+        const firstVariant = p.variants?.[0] || {};
+        const firstImage = p.images?.[0]?.src || p.image?.src || "";
+        return {
+          ...p,
+          type: p.product_type || "",
+          category: p.product_type || "",
+          price: firstVariant.price ? parseFloat(firstVariant.price) : 0,
+          image: firstImage ? { src: firstImage } : null,
+          image_url: firstImage,
+        };
+      });
       res.json({ products });
     } catch (error) {
       console.error("[SHOPIFY] Search Error:", error);
@@ -1843,10 +1782,48 @@ async function startServer() {
   let currentCategoryIndex = 0;
   const SYNC_CATEGORIES = ["Gadgets", "Clothing", "Accessories", "Furniture", "Watches", "Kitchen Utensils", "Toys", "Beauty", "Sports Accessories", "Fragrances", "Groceries", "Laptops", "Home Decoration"];
 
-  performShopifySync = async function() {
-    const clientId = process.env.SHOPIFY_CLIENT_ID;
-    const clientSecret = process.env.SHOPIFY_CLIENT_SECRET;
+  function matchCategory(prodType: string, prodTags: string[], defaultCategory: string, existingCategories: string[]): string {
+    const typeStr = (prodType || '').trim();
+    const tagsArr = prodTags || [];
 
+    const normalizeString = (str: string): string => {
+      return str.toLowerCase().replace(/[^a-z0-9]/g, '');
+    };
+
+    if (existingCategories.length > 0) {
+      const normType = normalizeString(typeStr);
+      
+      if (normType) {
+        const match = existingCategories.find(c => {
+          const normC = normalizeString(c);
+          return normC.includes(normType) || normType.includes(normC);
+        });
+        if (match) {
+          return match;
+        }
+      }
+
+      for (const tag of tagsArr) {
+        const normTag = normalizeString(tag);
+        if (!normTag) continue;
+        const match = existingCategories.find(c => {
+          const normC = normalizeString(c);
+          return normC.includes(normTag) || normTag.includes(normC);
+        });
+        if (match) {
+          return match;
+        }
+      }
+    }
+
+    if (typeStr && typeStr !== "0" && typeStr.toLowerCase() !== "uncategorized") {
+      return typeStr;
+    }
+
+    return defaultCategory;
+  }
+
+  performShopifySync = async function() {
     const category = SYNC_CATEGORIES[currentCategoryIndex];
     console.log(`[SHOPIFY] Starting periodic sync for category: ${category}...`);
     
@@ -1855,106 +1832,112 @@ async function startServer() {
       try {
         token = await getShopifyToken();
       } catch (authError) {
-        console.warn("[SHOPIFY] Sync skipped: Authentication failed. Please check SHOPIFY_CLIENT_ID in Settings.");
-        // If auth fails, we can't proceed with the sync
+        console.warn("[SHOPIFY] Sync skipped: Authentication failed. Please check credentials.");
         return;
       }
 
-      const products = await fetchShopifyProducts(token, category, 10);
-      console.log(`[SHOPIFY] Found ${products.length} products to sync for ${category}.`);
+      // Fetch more products so we have a better chance of finding 10 new unique ones
+      const products = await fetchShopifyProducts(token, "", 100);
+      console.log(`[SHOPIFY] Fetched ${products.length} products to scan from Shopify.`);
+
+      // Fetch existing categories for dynamic matching
+      const categoriesSnapshot = await adminDb.collection("categories").get();
+      const existingCategories: string[] = [];
+      categoriesSnapshot.forEach(doc => {
+        const data = doc.data();
+        if (data && data.name) {
+          existingCategories.push(data.name);
+        }
+      });
 
       let syncedCount = 0;
       for (const product of products) {
-        // Robust ID and SKU generation
-        const productId = product.id || product.product_id || product.gid || Math.random().toString(36).substr(2, 9);
-        const sku = product.sku || `SHP-${productId}`;
-        
-        // Check if product already exists in products collection
-        const existing = await adminDb.collection("products").where("sku", "==", sku).limit(1).get();
-        
-        if (existing.empty) {
-          // Robust Price Extraction
-          let price = 0;
-          let rawPrice: unknown = product.price || product.amount || product.price_min;
-          
-          if (!rawPrice && product.variants && product.variants[0] && product.variants[0].price) {
-            rawPrice = product.variants[0].price;
-          }
-          if (!rawPrice && product.priceRange && product.priceRange.min && product.priceRange.min.amount) {
-            rawPrice = product.priceRange.min.amount;
-          }
-
-          if (typeof rawPrice === 'object' && rawPrice !== null) {
-            const amount = rawPrice.amount || rawPrice.value || 0;
-            price = typeof amount === 'number' ? amount / 100 : parseFloat(amount);
-          } else if (typeof rawPrice === 'number') {
-            price = rawPrice / 100;
-          } else if (typeof rawPrice === 'string') {
-            price = parseFloat(rawPrice);
-          }
-          
-          // Robust Image Extraction
-          let imageUrl = "";
-          if (product.image && product.image.src) imageUrl = product.image.src;
-          else if (product.image_url) imageUrl = product.image_url;
-          else if (product.featured_image) imageUrl = product.featured_image;
-          else if (product.images && product.images[0] && product.images[0].src) imageUrl = product.images[0].src;
-          else if (product.media && product.media[0] && product.media[0].url) imageUrl = product.media[0].url;
-          else if (product.thumbnail) imageUrl = product.thumbnail;
-
-          // Robust Category Extraction
-          let productCategory = product.type || product.category || product.product_type || category;
-          productCategory = productCategory.replace(/shopify/gi, "").trim();
-          if (!productCategory) productCategory = category;
-
-          let productName = product.title || product.name || "Untitled Product";
-          productName = productName.replace(/shopify/gi, "").trim();
-
-          // Resolve category, auto-registering if missing, and fetch corresponding relational ID
-          const productDescription = product.body_html || product.description || product.summary || "";
-          const isUncategorized = !productCategory || 
-                                  productCategory.toLowerCase() === "uncategorized" || 
-                                  productCategory.toLowerCase() === "general";
-          if (isUncategorized) {
-            productCategory = determineCategoryFromText(productName, productDescription, category);
-          }
-          const catNameClean = productCategory.trim();
-          let categoryId = "";
-          if (catNameClean) {
-            const catSlugClean = catNameClean.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') || "general-category";
-            try {
-              await adminDb.collection("categories").doc(catSlugClean).set({
-                name: catNameClean,
-                slug: catSlugClean,
-                description: `Shopify automatically synced ${catNameClean} category`,
-                image: "",
-                created_at: new Date().toISOString()
-              });
-              categoryId = catSlugClean;
-            } catch (e) {
-               console.warn(`[SHOPIFY] Category sync upsert error:`, e);
-               categoryId = catSlugClean;
-            }
-          }
-          // Store synced item containing both category_slug and relational category_id
-          await adminDb.collection("products").add({
-            name: productName,
-            price: price || 0,
-            stock: 100,
-            category_slug: productCategory,
-            category_id: categoryId || null,
-            sku: sku,
-            image_url: imageUrl || "",
-            description: productDescription,
-            status: "In Stock",
-            created_at: new Date().toISOString(),
-            last_synced_at: new Date().toISOString(),
-            shopify_id: productId,
-            sync_category: category
-          });
-          syncedCount++;
-          console.log(`[SHOPIFY] Synced new product: ${productName} ($${price})`);
+        if (syncedCount >= 10) {
+          console.log("[SHOPIFY] Sync limit of 10 new products reached for this run.");
+          break;
         }
+
+        const productId = String(product.id || product.product_id || Math.random().toString(36).substr(2, 9));
+        const sku = product.variants?.[0]?.sku || `SHP-${productId}`;
+        const name = (product.title || "Untitled Product").replace(/shopify/gi, "").trim();
+
+        // Duplication checks
+        const skuCheck = await adminDb.collection("products").where("sku", "==", sku).limit(1).get();
+        if (!skuCheck.empty) {
+          continue;
+        }
+
+        const nameCheck = await adminDb.collection("products").where("name", "==", name).limit(1).get();
+        if (!nameCheck.empty) {
+          continue;
+        }
+
+        // Price extraction
+        let price = 0;
+        const rawPrice = product.variants?.[0]?.price;
+        if (rawPrice) {
+          price = parseFloat(rawPrice) || 0;
+        }
+        
+        // Image extraction
+        const imageUrl = product.images?.[0]?.src || product.image?.src || "";
+
+        // Category matching
+        const tags = typeof product.tags === 'string' 
+          ? product.tags.split(',').map((t: string) => t.trim()) 
+          : (Array.isArray(product.tags) ? product.tags : []);
+
+        const productCategory = matchCategory(
+          product.product_type || "",
+          tags,
+          category,
+          existingCategories
+        );
+
+        // Resolve category and create if missing
+        const catNameClean = productCategory.trim();
+        let categoryId = "";
+        if (catNameClean) {
+          const catSlugClean = catNameClean.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') || "general-category";
+          try {
+            await adminDb.collection("categories").doc(catSlugClean).set({
+              name: catNameClean,
+              slug: catSlugClean,
+              description: `Shopify automatically synced ${catNameClean} category`,
+              image: "",
+              created_at: new Date().toISOString()
+            });
+            categoryId = catSlugClean;
+            if (!existingCategories.includes(catNameClean)) {
+              existingCategories.push(catNameClean);
+            }
+          } catch (e) {
+             console.warn(`[SHOPIFY] Category sync upsert error:`, e);
+             categoryId = catSlugClean;
+          }
+        }
+
+        const productDescription = product.body_html || product.description || "";
+
+        await adminDb.collection("products").add({
+          name: name,
+          price: price,
+          stock: 100,
+          category_slug: productCategory,
+          category_id: categoryId || null,
+          sku: sku,
+          image: imageUrl,
+          image_url: imageUrl,
+          description: productDescription,
+          status: "In Stock",
+          created_at: new Date().toISOString(),
+          last_synced_at: new Date().toISOString(),
+          shopify_id: productId,
+          sync_category: category
+        });
+
+        syncedCount++;
+        console.log(`[SHOPIFY] Synced new product: ${name} ($${price})`);
       }
 
       // Update global sync status in system_settings
@@ -1965,7 +1948,7 @@ async function startServer() {
         status: "success"
       }, { merge: true });
 
-      console.log(`[SHOPIFY] Periodic sync completed for ${category}. Synced ${syncedCount} new products.`);
+      console.log(`[SHOPIFY] Periodic sync completed. Synced ${syncedCount} new products.`);
       
       // Rotate to next category
       currentCategoryIndex = (currentCategoryIndex + 1) % SYNC_CATEGORIES.length;

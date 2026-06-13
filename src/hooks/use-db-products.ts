@@ -459,6 +459,7 @@ export function dbProductToLegacy(p: Record<string, unknown>): Product {
       ? (p.specifications as Record<string, string>)
       : undefined,
     status: String(p.status ?? "Active"),
+    createdAt: p.created_at ? String(p.created_at) : undefined,
   };
 }
 

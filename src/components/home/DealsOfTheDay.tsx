@@ -37,9 +37,22 @@ export function DealsOfTheDay() {
       hash |= 0;
     }
     const hotPool = products.filter((p) => p.badge === "Hot" || p.status === "Hot");
-    const selectionPool = hotPool.length > 0 ? hotPool : products;
-    const index = Math.abs(hash) % selectionPool.length;
-    return selectionPool[index];
+    const basePool = hotPool.length > 0 ? hotPool : products;
+
+    // Stable selection pool: exclude products synced/created today
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
+    const selectionPool = basePool.filter(p => {
+      if (!p.createdAt) return true;
+      const createdDate = new Date(p.createdAt);
+      return createdDate < todayStart;
+    });
+
+    const finalPool = selectionPool.length > 0 ? selectionPool : basePool;
+    const sortedPool = [...finalPool].sort((a, b) => a.id.localeCompare(b.id));
+
+    const index = Math.abs(hash) % sortedPool.length;
+    return sortedPool[index];
   })();
 
   // Set target to end of today
