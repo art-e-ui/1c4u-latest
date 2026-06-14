@@ -42,22 +42,25 @@ export function FeaturedProducts() {
               {/* Promo card 1 */}
               <Link
                 to={promoCards[0].link}
-                className={`col-span-2 md:col-span-1 rounded-2xl bg-gradient-to-br ${promoCards[0].color} border border-border p-5 flex flex-col justify-end min-h-[160px] transition-shadow hover:shadow-lg relative overflow-hidden group`}
+                className="col-span-2 md:col-span-1 rounded-2xl border border-border p-5 flex flex-col justify-end min-h-[200px] md:min-h-[240px] h-full transition-all hover:shadow-lg relative overflow-hidden group"
               >
-                {promoCards[0].product?.image && (
-                  <div className="absolute right-[-10px] bottom-[-10px] w-24 h-24 md:w-28 md:h-28 flex items-center justify-center pointer-events-none opacity-90">
+                {promoCards[0].product?.image ? (
+                  <>
                     <img 
                       src={parseImageUrl(promoCards[0].product.image)} 
                       alt="Fashion" 
-                      className="w-full h-full object-contain transform group-hover:scale-110 transition-transform duration-500"
+                      className="absolute inset-0 w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500 pointer-events-none"
                       onError={(e) => { (e.target as HTMLElement).style.display = 'none'; }}
                     />
-                  </div>
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/40 to-transparent z-10 pointer-events-none" />
+                  </>
+                ) : (
+                  <div className={`absolute inset-0 bg-gradient-to-br ${promoCards[0].color} z-0`} />
                 )}
-                <div className="relative z-10 max-w-[65%]">
-                  <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">{promoCards[0].subtitle}</p>
-                  <h3 className="mt-1 text-base font-black text-foreground leading-tight">{promoCards[0].title}</h3>
-                  <span className="mt-2 block text-xs font-semibold text-primary">{t('common.shopNow')} →</span>
+                <div className="relative z-20">
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-gray-300">{promoCards[0].subtitle}</p>
+                  <h3 className="mt-1 text-base font-black text-white leading-tight">{promoCards[0].title}</h3>
+                  <span className="mt-2 block text-xs font-semibold text-blue-400 group-hover:text-blue-300 transition-colors">{t('common.shopNow')} →</span>
                 </div>
               </Link>
 
@@ -72,22 +75,25 @@ export function FeaturedProducts() {
               {/* Promo card 2 */}
               <Link
                 to={promoCards[1].link}
-                className={`col-span-2 md:col-span-1 rounded-2xl bg-gradient-to-br ${promoCards[1].color} border border-border p-5 flex flex-col justify-end min-h-[160px] transition-shadow hover:shadow-lg relative overflow-hidden group`}
+                className="col-span-2 md:col-span-1 rounded-2xl border border-border p-5 flex flex-col justify-end min-h-[200px] md:min-h-[240px] h-full transition-all hover:shadow-lg relative overflow-hidden group"
               >
-                {promoCards[1].product?.image && (
-                  <div className="absolute right-[-10px] bottom-[-10px] w-24 h-24 md:w-28 md:h-28 flex items-center justify-center pointer-events-none opacity-90">
+                {promoCards[1].product?.image ? (
+                  <>
                     <img 
                       src={parseImageUrl(promoCards[1].product.image)} 
                       alt="Tech" 
-                      className="w-full h-full object-contain transform group-hover:scale-110 transition-transform duration-500"
+                      className="absolute inset-0 w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500 pointer-events-none"
                       onError={(e) => { (e.target as HTMLElement).style.display = 'none'; }}
                     />
-                  </div>
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/40 to-transparent z-10 pointer-events-none" />
+                  </>
+                ) : (
+                  <div className={`absolute inset-0 bg-gradient-to-br ${promoCards[1].color} z-0`} />
                 )}
-                <div className="relative z-10 max-w-[65%]">
-                  <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">{promoCards[1].subtitle}</p>
-                  <h3 className="mt-1 text-base font-black text-foreground leading-tight">{promoCards[1].title}</h3>
-                  <span className="mt-2 block text-xs font-semibold text-primary">{t('common.shopNow')} →</span>
+                <div className="relative z-20">
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-gray-300">{promoCards[1].subtitle}</p>
+                  <h3 className="mt-1 text-base font-black text-white leading-tight">{promoCards[1].title}</h3>
+                  <span className="mt-2 block text-xs font-semibold text-blue-400 group-hover:text-blue-300 transition-colors">{t('common.shopNow')} →</span>
                 </div>
               </Link>
             </>
