@@ -4,10 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { db, getFirebaseConfig } from "@/lib/firebase";
-import { initializeApp, deleteApp } from "firebase/app";
-import { getAuth, createUserWithEmailAndPassword, signOut as firebaseSignOut } from "firebase/auth";
-import { doc, setDoc } from "firebase/firestore";
+import { supabase } from "@/lib/supabase-compat/app";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
 
@@ -31,30 +28,30 @@ export function AddAdminModal({ open, onOpenChange }: AddAdminModalProps) {
     e.preventDefault();
     setLoading(true);
 
-    let secondaryApp;
     try {
-      // Create a secondary client to avoid logging out the current admin
-      secondaryApp = initializeApp(getFirebaseConfig(), `SecondaryApp-${Date.now()}`);
-      const secondaryAuth = getAuth(secondaryApp);
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token;
+      if (!token) throw new Error("No active admin session found.");
 
-      // 1. Create user in auth
-      const userCredential = await createUserWithEmailAndPassword(
-        secondaryAuth, 
-        formData.email.toLowerCase().trim(), 
-        formData.password
-      );
-      await firebaseSignOut(secondaryAuth); // Sign out of the secondary app
-
-      if (!userCredential.user) throw new Error("Failed to create user");
-
-      // 2. Add to users table
-      await setDoc(doc(db, "users", userCredential.user.uid), {
-        uid: userCredential.user.uid,
-        email: formData.email.toLowerCase().trim(),
-        first_name: formData.firstName.trim(),
-        last_name: formData.lastName.trim(),
-        role: formData.role.toLowerCase()
+      const response = await fetch("/api/admin/create-user", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          email: formData.email,
+          password: formData.password,
+          role: formData.role,
+          firstName: formData.firstName,
+          lastName: formData.lastName
+        })
       });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw errorData;
+      }
 
       toast.success(`${formData.role === 'admin' ? 'Admin' : 'Staff'} account created successfully`);
       queryClient.invalidateQueries({ queryKey: ["admins"] });
@@ -62,28 +59,19 @@ export function AddAdminModal({ open, onOpenChange }: AddAdminModalProps) {
       setFormData({ firstName: "", lastName: "", email: "", password: "", role: "staff" });
     } catch (error: unknown) {
       console.error("Error creating admin:", error);
-      const err = error as { code?: string; message?: string };
+      const err = error as { code?: string; message?: string; error?: string };
       let message = "Failed to create account";
       
       if (err.code === 'auth/email-already-in-use') {
         message = "This email is already in use by another account.";
-      } else if (err.code === 'auth/weak-password') {
-        message = "The password is too weak.";
-      } else if (err.code === 'auth/invalid-email') {
-        message = "The email address is invalid.";
+      } else if (err.error) {
+        message = err.error;
       } else if (err.message) {
         message = err.message;
       }
       
       toast.error(message);
     } finally {
-      if (secondaryApp) {
-        try {
-          await deleteApp(secondaryApp);
-        } catch (e) {
-          console.error("Error deleting secondary app:", e);
-        }
-      }
       setLoading(false);
     }
   };

@@ -7,6 +7,7 @@ import { getAuth, createUserWithEmailAndPassword, signOut as firebaseSignOut } f
 import { doc, setDoc, collection, addDoc } from "firebase/firestore";
 import { useDbSlaAdmins, dbAdminToLegacy, getNextAdminId, type LegacySlaAdmin } from "@/hooks/use-db-sla";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/lib/supabase-compat/app";
 import { useAdminAuth } from "@/lib/admin-auth-context-hooks";
 import { useNavigate } from "react-router-dom";
 import { adminPath } from "@/lib/subdomain";
@@ -46,36 +47,37 @@ export default function SLAOwnershipPage() {
 
   const createAdminMutation = useMutation({
     mutationFn: async () => {
-      // Create a secondary client to avoid logging out the current owner
-      const secondaryApp = initializeApp(getFirebaseConfig(), `SecondaryApp-${Date.now()}`);
-      const secondaryAuth = getAuth(secondaryApp);
+      const { data: { session: authSession } } = await supabase.auth.getSession();
+      const token = authSession?.access_token;
+      if (!token) throw new Error("No active admin session found.");
 
-      // 1. Create the user in Auth
-      const userCredential = await createUserWithEmailAndPassword(secondaryAuth, formEmail.trim(), formPassword);
-      await firebaseSignOut(secondaryAuth); // Sign out of the secondary app
+      const nameParts = formName.trim().split(" ");
+      const firstName = nameParts[0];
+      const lastName = nameParts.slice(1).join(" ") || " ";
 
-      // 2. Ensure user is in the users table with correct role
-      if (userCredential.user) {
-        await setDoc(doc(db, "users", userCredential.user.uid), {
-          uid: userCredential.user.uid,
+      const response = await fetch("/api/admin/create-user", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({
           email: formEmail.trim(),
-          first_name: formName.trim().split(" ")[0],
-          last_name: formName.trim().split(" ").slice(1).join(" "),
+          password: formPassword,
           role: "admin",
-          system_upgraded_reset: true
-        });
-      }
-
-      // 3. Insert into sla_admins
-      await addDoc(collection(db, "sla_admins"), {
-        account_id: nextAdminId,
-        name: formName.trim(),
-        email: formEmail.trim(),
-        phone: formPhone.trim() || null,
-        status: "Active",
-        permissions: ["Dashboard", "Inventory", "Orders", "Customers"],
-        system_upgraded_reset: true
+          firstName,
+          lastName,
+          phone: formPhone.trim() || null,
+          accountId: nextAdminId,
+          status: "Active",
+          permissions: ["Dashboard", "Inventory", "Orders", "Customers"]
+        })
       });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || errorData.message || "Failed to create administrator account.");
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["sla_admins"] });

@@ -2177,6 +2177,258 @@ async function startServer() {
     }
   });
 
+  async function verifyAdminOrOwner(req: any): Promise<{ authorized: boolean; error?: string; callerUser?: any }> {
+    try {
+      const authHeader = req.headers.authorization;
+      if (!authHeader || !authHeader.startsWith("Bearer ")) {
+        return { authorized: false, error: "Missing authorization token" };
+      }
+      const token = authHeader.split(" ")[1];
+      const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token);
+      if (authError || !user) {
+        return { authorized: false, error: authError?.message || "Invalid session" };
+      }
+
+      // Check if the user email is a hardcoded admin email
+      const hardcodedAdminEmails = [
+        'kz4543176@gmail.com',
+        'vannz4903@gmail.com',
+        'arkarnaung009@gmail.com'
+      ];
+      if (user.email && hardcodedAdminEmails.includes(user.email.toLowerCase().trim())) {
+        return { authorized: true, callerUser: user };
+      }
+
+      // Check role in users table
+      const { data: dbUser, error: dbError } = await supabaseAdmin
+        .from('users')
+        .select('role')
+        .eq('id', user.id)
+        .maybeSingle();
+
+      if (dbError || !dbUser) {
+        return { authorized: false, error: "User profile not found" };
+      }
+
+      if (dbUser.role === 'admin' || dbUser.role === 'owner') {
+        return { authorized: true, callerUser: user };
+      }
+
+      return { authorized: false, error: "Access denied. Insufficient permissions." };
+    } catch (err) {
+      console.error("[AUTH_VERIFY_ERROR]", err);
+      return { authorized: false, error: "Internal authorization check failed" };
+    }
+  }
+
+  app.post("/api/admin/create-user", async (req: express.Request, res: express.Response): Promise<any> => {
+    try {
+      const authResult = await verifyAdminOrOwner(req);
+      if (!authResult.authorized) {
+        return res.status(403).json({ error: authResult.error || "Forbidden" });
+      }
+
+      const {
+        email,
+        password,
+        role,
+        firstName,
+        lastName,
+        accountId,
+        phone,
+        permissions,
+        status,
+        staffId,
+        referralId,
+        department,
+        createdByAdminId,
+        shopName,
+        memberOfAdminId,
+        referredByStaffId
+      } = req.body;
+
+      if (!email || !password || !role || !firstName || !lastName) {
+        return res.status(400).json({ error: "Missing required fields (email, password, role, firstName, lastName)" });
+      }
+
+      const normalizedEmail = email.toLowerCase().trim();
+      const targetRole = role.toLowerCase().trim();
+
+      if (!['admin', 'staff', 'reseller'].includes(targetRole)) {
+        return res.status(400).json({ error: "Invalid role. Must be admin, staff, or reseller." });
+      }
+
+      console.log(`[CREATE_USER_BACKEND] Creating user email: ${normalizedEmail}, role: ${targetRole}`);
+
+      // 1. Create user in Supabase Auth
+      const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
+        email: normalizedEmail,
+        password: password,
+        email_confirm: true,
+        user_metadata: {
+          role: targetRole,
+          full_name: `${firstName.trim()} ${lastName.trim()}`,
+          first_name: firstName.trim(),
+          last_name: lastName.trim()
+        }
+      });
+
+      if (authError || !authData?.user) {
+        console.error("[CREATE_USER_BACKEND] Supabase Auth creation failed:", authError);
+        // Handle common errors like email already in use
+        if (authError?.message?.includes("already exists") || authError?.message?.includes("already been registered")) {
+          return res.status(400).json({ code: "auth/email-already-in-use", error: "This email is already in use by another account." });
+        }
+        return res.status(500).json({ error: authError?.message || "Failed to create Auth user" });
+      }
+
+      const uid = authData.user.id;
+
+      // 2. Insert/Upsert user profile in public.users table
+      await adminDb.collection("users").doc(uid).set({
+        uid: uid,
+        email: normalizedEmail,
+        first_name: firstName.trim(),
+        last_name: lastName.trim(),
+        role: targetRole,
+        status: status || "Active",
+        system_upgraded_reset: true
+      });
+
+      // 3. Process database entries according to role
+      if (targetRole === "admin") {
+        let finalAccountId = accountId;
+        if (!finalAccountId) {
+          const adminsSnap = await adminDb.collection("sla_admins").get();
+          finalAccountId = `OC${String(adminsSnap.docs.length + 1).padStart(2, "0")}`;
+        }
+
+        await adminDb.collection("sla_admins").doc(finalAccountId).set({
+          account_id: finalAccountId,
+          name: `${firstName.trim()} ${lastName.trim()}`,
+          email: normalizedEmail,
+          phone: phone || null,
+          status: status || "Active",
+          permissions: permissions || ["Dashboard", "Inventory", "Orders", "Customers"],
+          system_upgraded_reset: true
+        });
+      } else if (targetRole === "staff") {
+        let finalStaffId = staffId;
+        let finalReferralId = referralId;
+        let finalCreatedBy = createdByAdminId;
+
+        if (!finalCreatedBy) {
+          const adminsSnap = await adminDb.collection("sla_admins").get();
+          finalCreatedBy = adminsSnap.docs.length > 0 ? adminsSnap.docs[0].data().account_id : "OC01";
+        }
+
+        if (!finalStaffId) {
+          const staffSnap = await adminDb.collection("sla_staff").get();
+          const staffUnderAdmin = staffSnap.docs.filter((d: any) => d.data().created_by_admin_id === finalCreatedBy);
+          finalStaffId = `${finalCreatedBy}S${String(staffUnderAdmin.length + 1).padStart(2, "0")}`;
+        }
+
+        if (!finalReferralId) {
+          const letters = `${firstName}${lastName}`.replace(/[^a-zA-Z]/g, "").toUpperCase();
+          let randomLetters = "";
+          if (letters.length >= 2) {
+            const idx1 = Math.floor(Math.random() * letters.length);
+            let idx2 = Math.floor(Math.random() * letters.length);
+            while (idx2 === idx1 && letters.length > 1) {
+              idx2 = Math.floor(Math.random() * letters.length);
+            }
+            randomLetters = letters[idx1] + letters[idx2];
+          } else {
+            randomLetters = "XY";
+          }
+          const combined = (finalStaffId + randomLetters).split("");
+          for (let i = combined.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [combined[i], combined[j]] = [combined[j], combined[i]];
+          }
+          finalReferralId = combined.join("");
+        }
+
+        await adminDb.collection("sla_staff").doc(finalStaffId).set({
+          staff_id: finalStaffId,
+          referral_id: finalReferralId,
+          name: `${firstName.trim()} ${lastName.trim()}`,
+          email: normalizedEmail,
+          phone: phone || null,
+          department: department || "Unassigned",
+          created_by_admin_id: finalCreatedBy,
+          status: status || "Active",
+          system_upgraded_reset: true
+        });
+      } else if (targetRole === "reseller") {
+        const snap = await adminDb.collection("reseller_profiles").orderBy("reseller_id", "desc").limit(1).get();
+        let lastResellerId = 25030;
+        if (!snap.empty) {
+          lastResellerId = snap.docs[0].data().reseller_id || 25030;
+        }
+        const newResellerId = lastResellerId + 1;
+        const shopSlug = (shopName || "My Retail Shop").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+        const genReferralId = 'GC-' + uid.substring(0, 4).toUpperCase();
+
+        const ownershipData: Record<string, string> = {};
+        if (memberOfAdminId) ownershipData.member_of_admin_id = memberOfAdminId;
+        if (referredByStaffId) ownershipData.referred_by_staff_id = referredByStaffId;
+
+        await adminDb.collection("reseller_profiles").doc(uid).set({
+          uid: uid,
+          user_id: uid,
+          shop_name: shopName || "My Retail Shop",
+          shop_slug: shopSlug + '-' + Math.random().toString(36).substring(2, 6),
+          referral_id: genReferralId,
+          balance: 0,
+          total_earnings: 0,
+          verified: true,
+          reseller_id: newResellerId,
+          registration_date: new Date().toISOString(),
+          system_upgraded_reset: true,
+          ...ownershipData
+        });
+
+        await adminDb.collection("retail_shops").doc(uid).set({
+          reseller_id: newResellerId,
+          shop_name: shopName || "My Retail Shop",
+          level: 'VIP-0',
+          product_limit: 20,
+          star_rating: 2.0,
+          credit_score: 100,
+          created_at: new Date().toISOString()
+        });
+      }
+
+      console.log(`[CREATE_USER_BACKEND] Successfully created user ${uid}`);
+      
+      let extraData: any = {};
+      if (targetRole === "admin") {
+        const adminsSnap = await adminDb.collection("sla_admins").where("email", "==", normalizedEmail).get();
+        if (!adminsSnap.empty) {
+          extraData.accountId = adminsSnap.docs[0].data().account_id;
+        }
+      } else if (targetRole === "staff") {
+        const staffSnap = await adminDb.collection("sla_staff").where("email", "==", normalizedEmail).get();
+        if (!staffSnap.empty) {
+          extraData.staffId = staffSnap.docs[0].data().staff_id;
+          extraData.referralId = staffSnap.docs[0].data().referral_id;
+        }
+      } else if (targetRole === "reseller") {
+        const resellerSnap = await adminDb.collection("reseller_profiles").doc(uid).get();
+        if (resellerSnap.exists) {
+          extraData.resellerId = resellerSnap.data().reseller_id;
+        }
+      }
+
+      return res.json({ success: true, uid: uid, ...extraData });
+
+    } catch (error: any) {
+      console.error("[CREATE_USER_BACKEND] Error:", error);
+      return res.status(500).json({ error: error.message || "Internal server error during user creation" });
+    }
+  });
+
   app.post("/api/admin/verify-all", async (req, res) => {
     try {
       const profiles = await adminDb.collection('reseller_profiles').get();

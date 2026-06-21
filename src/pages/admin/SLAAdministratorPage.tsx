@@ -5,6 +5,7 @@ import { initializeApp } from "firebase/app";
 import { getAuth, createUserWithEmailAndPassword, signOut as firebaseSignOut } from "firebase/auth";
 import { doc, setDoc, collection, addDoc } from "firebase/firestore";
 import { useDbSlaAdmins, useDbSlaStaff, dbAdminToLegacy, dbStaffToLegacy, getNextStaffId, generateReferralId, type LegacySlaAdmin, type LegacySlaStaff } from "@/hooks/use-db-sla";
+import { supabase } from "@/lib/supabase-compat/app";
 import { useAdminAuth } from "@/lib/admin-auth-context-hooks";
 import {
   Mail, Phone, MoreVertical, X, Search, Plus, Fingerprint,
@@ -88,38 +89,40 @@ export default function SLAAdministratorPage() {
       const newStaffId = getNextStaffId(creatingForAdmin.accountId, staffList);
       const referralId = generateReferralId(newStaffId, formName.trim());
 
-      // Create a secondary client to avoid logging out the current admin
-      const secondaryApp = initializeApp(getFirebaseConfig(), `SecondaryApp-${Date.now()}`);
-      const secondaryAuth = getAuth(secondaryApp);
+      const { data: { session: authSession } } = await supabase.auth.getSession();
+      const token = authSession?.access_token;
+      if (!token) throw new Error("No active admin session found.");
 
-      // 1. Create the user in Auth
-      const userCredential = await createUserWithEmailAndPassword(secondaryAuth, formEmail.trim(), formPassword);
-      await firebaseSignOut(secondaryAuth); // Sign out of the secondary app
+      const nameParts = formName.trim().split(" ");
+      const firstName = nameParts[0];
+      const lastName = nameParts.slice(1).join(" ") || " ";
 
-      // 2. Ensure user is in the users table with correct role
-      if (userCredential.user) {
-        await setDoc(doc(db, "users", userCredential.user.uid), {
-          uid: userCredential.user.uid,
+      const response = await fetch("/api/admin/create-user", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({
           email: formEmail.trim(),
-          first_name: formName.trim().split(" ")[0],
-          last_name: formName.trim().split(" ").slice(1).join(" "),
+          password: formPassword,
           role: "staff",
-          system_upgraded_reset: true
-        });
+          firstName,
+          lastName,
+          phone: formPhone.trim() || null,
+          staffId: newStaffId,
+          referralId: referralId,
+          department: formDepartment || "Unassigned",
+          createdByAdminId: creatingForAdmin.accountId,
+          status: "Active"
+        })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || errorData.message || "Failed to create staff account.");
       }
 
-      // 3. Insert into sla_staff
-      await addDoc(collection(db, "sla_staff"), {
-        staff_id: newStaffId,
-        referral_id: referralId,
-        name: formName.trim(),
-        email: formEmail.trim(),
-        phone: formPhone.trim() || null,
-        department: formDepartment || "Unassigned",
-        created_by_admin_id: creatingForAdmin.accountId,
-        status: "Active",
-        system_upgraded_reset: true
-      });
       return newStaffId;
     },
     onSuccess: (staffId) => {

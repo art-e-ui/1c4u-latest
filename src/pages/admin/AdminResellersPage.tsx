@@ -19,9 +19,8 @@ import {
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription,
 } from "@/components/ui/dialog";
-import { auth, db, getFirebaseConfig } from "@/lib/firebase";
-import { createUserWithEmailAndPassword, getAuth, signOut } from "firebase/auth";
-import { initializeApp, getApp, getApps } from "firebase/app";
+import { db } from "@/lib/firebase";
+import { supabase } from "@/lib/supabase-compat/app";
 import { doc, setDoc, collection, query, orderBy, limit, getDocs, addDoc, updateDoc, where } from "firebase/firestore";
 import { toast } from "sonner";
 import { Star, TrendingUp, ShieldCheck, Package, Bell } from "lucide-react";
@@ -144,36 +143,12 @@ export default function AdminResellersPage() {
       return;
     }
     setLoading(true);
-    
-    // Create a secondary app instance to avoid signing out the current admin
-    const secondaryAppName = `secondary-app-${Date.now()}`;
-    const secondaryApp = initializeApp(getFirebaseConfig(), secondaryAppName);
-    const secondaryAuth = getAuth(secondaryApp);
 
     try {
-      const userCredential = await createUserWithEmailAndPassword(secondaryAuth, form.email, form.password);
-      const userId = userCredential.user.uid;
+      const { data: { session: authSession } } = await supabase.auth.getSession();
+      const token = authSession?.access_token;
+      if (!token) throw new Error("No active admin session found.");
 
-      await setDoc(doc(db, 'users', userId), {
-        uid: userId,
-        email: form.email,
-        first_name: form.firstName,
-        last_name: form.lastName,
-        role: 'reseller',
-        system_upgraded_reset: true,
-      });
-
-      const shopSlug = form.shopName.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
-      const referralId = 'GC-' + userId.substring(0, 4).toUpperCase();
-      
-      const q = query(collection(db, 'reseller_profiles'), orderBy('reseller_id', 'desc'), limit(1));
-      const snapshot = await getDocs(q);
-      let lastResellerId = 25030;
-      if (!snapshot.empty) {
-        lastResellerId = snapshot.docs[0].data().reseller_id || 25030;
-      }
-      const newResellerId = lastResellerId + 1;
-      
       // Determine ownership based on current session
       const ownershipData: Record<string, string> = {};
       let adminName = 'System';
@@ -181,17 +156,17 @@ export default function AdminResellersPage() {
 
       if (session) {
         if (session.role === "Admin" || session.role === "Owner") {
-          ownershipData.member_of_admin_id = session.accountId || session.uid;
+          ownershipData.memberOfAdminId = session.accountId || session.uid;
           // Look up admin name if possible
-          const myAdmin = dbAdmins?.find(a => a.account_id === ownershipData.member_of_admin_id);
+          const myAdmin = dbAdmins?.find(a => a.account_id === ownershipData.memberOfAdminId);
           if (myAdmin) adminName = myAdmin.name;
         } else if (session.role === "User") {
-          ownershipData.referred_by_staff_id = session.accountId || session.uid;
-          const me = dbStaff?.find(s => s.id === ownershipData.referred_by_staff_id);
+          ownershipData.referredByStaffId = session.accountId || session.uid;
+          const me = dbStaff?.find(s => s.id === ownershipData.referredByStaffId);
           if (me) {
             staffName = me.name;
             if (me.created_by_admin_id) {
-              ownershipData.member_of_admin_id = me.created_by_admin_id;
+              ownershipData.memberOfAdminId = me.created_by_admin_id;
               const myAdmin = dbAdmins?.find(a => a.account_id === me.created_by_admin_id);
               if (myAdmin) adminName = myAdmin.name;
             }
@@ -199,27 +174,37 @@ export default function AdminResellersPage() {
         }
       }
 
-      await setDoc(doc(db, 'reseller_profiles', userId), {
-        uid: userId,
-        user_id: userId,
-        shop_name: form.shopName,
-        shop_slug: shopSlug + '-' + Math.random().toString(36).substring(2, 6),
-        referral_id: referralId,
-        balance: 0,
-        total_earnings: 0,
-        verified: false,
-        reseller_id: newResellerId,
-        registration_date: new Date().toISOString(),
-        system_upgraded_reset: true,
-        ...ownershipData
+      const response = await fetch("/api/admin/create-user", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          email: form.email,
+          password: form.password,
+          role: "reseller",
+          firstName: form.firstName,
+          lastName: form.lastName,
+          shopName: form.shopName,
+          ...ownershipData
+        })
       });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || errorData.message || "Failed to create reseller account.");
+      }
+
+      const result = await response.json();
+      const resellerId = result.resellerId || 25031;
 
       // Telegram Notification for Manual Registration
       try {
         const telegramMessage = `<b>New Reseller Added (by Admin)</b>\n\n` +
           `👤 Name: ${form.firstName} ${form.lastName}\n` +
           `📧 Email: ${form.email}\n` +
-          `🆔 Reseller ID: ${newResellerId}\n` +
+          `🆔 Reseller ID: ${resellerId}\n` +
           `🏢 Admin: ${adminName}\n` +
           `👔 Staff: ${staffName}\n` +
           `📅 Date: ${new Date().toLocaleString()}`;
@@ -232,31 +217,6 @@ export default function AdminResellersPage() {
       } catch (e) {
         console.error("Failed to send admin-initiated registration notification:", e);
       }
-
-      // Simulation of auto-verify for manual add
-      setTimeout(async () => {
-        try {
-          const { doc, updateDoc } = await import('firebase/firestore');
-          const { db } = await import('@/lib/firebase');
-          await updateDoc(doc(db, 'reseller_profiles', userId), { verified: true });
-          console.log(`[AUTO-VERIFY] Manually added reseller ${userId} verified.`);
-        } catch (e) {
-          console.error("Auto-verify failed for manual add:", e);
-        }
-      }, 2 * 60 * 1000);
-
-      await setDoc(doc(db, 'retail_shops', userId), {
-        reseller_id: newResellerId,
-        shop_name: form.shopName,
-        level: 'VIP-0',
-        product_limit: 20,
-        star_rating: 2.0,
-        credit_score: 100,
-        created_at: new Date().toISOString(),
-      });
-
-      // Sign out from secondary app and clean up
-      await signOut(secondaryAuth);
       
       toast.success("Reseller created successfully");
       queryClient.invalidateQueries({ queryKey: ["resellers"] });
